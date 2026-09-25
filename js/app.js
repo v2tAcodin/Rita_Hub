@@ -147,7 +147,28 @@ class App {
       checkinBtn.addEventListener('click', () => {
         StudyHeatmap.recordTodayActivity('checkin', 1);
         StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
+        soundEngine.playPageFlip();
         this.showToast('🎉 Check-in thành công! Chuỗi ngày chăm chỉ của Rita lại tăng thêm! 🔥✨');
+      });
+    }
+
+    const quickPomoBtn = document.getElementById('btn-quick-pomo-heatmap');
+    if (quickPomoBtn) {
+      quickPomoBtn.addEventListener('click', () => {
+        StudyHeatmap.recordTodayActivity('pomo', 1);
+        StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
+        soundEngine.playChime();
+        this.showToast('🍅 +1 Phiên Pomodoro hoàn thành! Giỏi lắm Rita ơi! ☕✨');
+      });
+    }
+
+    const quickQuizBtn = document.getElementById('btn-quick-quiz-heatmap');
+    if (quickQuizBtn) {
+      quickQuizBtn.addEventListener('click', () => {
+        StudyHeatmap.recordTodayActivity('quiz', 1);
+        StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
+        soundEngine.playPageFlip();
+        this.showToast('🎯 +1 Lượt luyện trắc nghiệm VSA! Tiếp tục phát huy nhé! 🌸');
       });
     }
 
@@ -156,7 +177,8 @@ class App {
       resetHeatmapBtn.addEventListener('click', () => {
         StudyHeatmap.resetToRealisticHistory();
         StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
-        this.showToast('🌸 Đã đồng bộ dữ liệu học tập thực tế 16 tuần của sinh viên kiểm toán!');
+        soundEngine.playPageFlip();
+        this.showToast('🌸 Đã đồng bộ dữ liệu học tập thực tế 20 tuần của sinh viên kiểm toán!');
       });
     }
   }

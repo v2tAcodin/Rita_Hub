@@ -1,8 +1,15 @@
 // Study Activity Heatmap (Bản Đồ Nhiệt Chăm Chỉ) for Rita Hub
-// Visualizes realistic university auditing study sessions, Pomodoros, and VSA reviews
+// Visualizes authentic university auditing study patterns, Pomodoros, and VSA quizzes
 
 export class StudyHeatmap {
-  static STORAGE_KEY = 'rita_hub_study_heatmap_v3';
+  static STORAGE_KEY = 'rita_hub_study_heatmap_v4';
+
+  static formatLocalDate(d) {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   static getHeatmapData() {
     const raw = localStorage.getItem(this.STORAGE_KEY);
@@ -13,7 +20,6 @@ export class StudyHeatmap {
         console.error("Error parsing heatmap data", e);
       }
     }
-    // Generate realistic authentic academic history for the 16-week window
     const defaultData = this.generateInitialHistory();
     this.saveHeatmapData(defaultData);
     return defaultData;
@@ -34,93 +40,105 @@ export class StudyHeatmap {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Realistic study highlights and topics for an auditing student
     const studyTopics = [
-      "Ôn tập VSA 320: Xác định Mức trọng yếu tổng thể OM & PM",
-      "Làm bài tập lớn Báo cáo tài chính & Working Papers Excel",
-      "Giải 20 câu trắc nghiệm chu trình Bán hàng & Thu tiền",
-      "Đọc chuẩn mực VSA 500 & VSA 505 về Thư xác nhận",
-      "Ghi chú cạm bẫy Thuế TNDN: Chi phí không được trừ",
-      "Luyện đề thi thử Kiểm toán căn bản & cơ sở dẫn liệu",
+      "VSA 320: Xác định Mức trọng yếu tổng thể OM & PM",
+      "Bài tập lớn Báo cáo tài chính & Mẫu Working Papers Excel",
+      "Giải 20 câu trắc nghiệm chu trình Bán hàng - Thu tiền",
+      "Đọc chuẩn mực VSA 500 & VSA 505 về Thư xác nhận bên ngoài",
+      "Ghi chú cạm bẫy Thuế TNDN: Các khoản chi phí không được trừ",
+      "Luyện đề thi thử Kiểm toán căn bản & Các cơ sở dẫn liệu",
       "Học nhóm tại quán cà phê: Thảo luận rủi ro gian lận VSA 240",
-      "Ôn thi giữa kỳ: Phân tích tỷ số tài chính và Cut-off test",
-      "Đọc giáo trình Kiểm toán hoạt động & Kiểm soát nội bộ COSO"
+      "Ôn tập giữa kỳ: Phân tích tỷ số tài chính & Thủ tục Cut-off",
+      "Đọc giáo trình Kiểm toán hoạt động & Hệ thống kiểm soát nội bộ COSO",
+      "Thực hành kiểm toán khoản mục Hàng tồn kho theo VSA 501",
+      "Kiểm tra tính tuân thủ pháp luật thuế & Hóa đơn điện tử",
+      "Phân tích ma trận ý kiến kiểm toán theo VSA 705"
     ];
 
-    // Generate past 112 days (16 full weeks) with an authentic university rhythm
-    for (let i = 112; i >= 0; i--) {
+    // Generate past 140 days (~20 weeks from early May to late September)
+    for (let i = 140; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = this.formatLocalDate(d);
       const dayOfWeek = d.getDay(); // 0: Sunday, 6: Saturday
 
       let count = 0;
       let topic = "";
 
-      // PHASE 1: Final Exam Crunch period (75 - 95 days ago, ~ late June)
-      if (i >= 75 && i <= 95) {
-        // High intensity exam revision (4 - 7 sessions)
-        const rand = (i * 13) % 10;
-        if (rand > 1) {
-          count = 4 + (i % 4); // 4, 5, 6, 7 sessions
-          topic = "Mùa thi cuối kỳ: " + studyTopics[i % studyTopics.length];
-        }
-      }
-      // PHASE 2: Summer break & Relaxing period (45 - 74 days ago, ~ July - August)
-      else if (i >= 45 && i < 75) {
-        // Sporadic, relaxing study (mostly 0, some 1 - 2 sessions on weekends)
-        if (dayOfWeek === 0 || dayOfWeek === 6 || (i % 5 === 0)) {
-          count = 1 + (i % 2); // 1 or 2 sessions
-          topic = "Đọc tài liệu hè: " + studyTopics[i % studyTopics.length];
-        } else {
-          count = 0; // Rest day
-        }
-      }
-      // PHASE 3: New Semester Start & Consistent Study (15 - 44 days ago, ~ late August - mid September)
-      else if (i >= 15 && i < 45) {
+      // 1. RECENT STREAK (Last 14 days up to today): Continuous uninterrupted study
+      if (i < 14 && i > 0) {
         if (dayOfWeek === 0 || dayOfWeek === 6) {
-          // Weekend cafe study sessions: 3 - 5 sessions
-          count = 3 + (i % 3);
-          topic = "Học cuối tuần: " + studyTopics[i % studyTopics.length];
-        } else if (dayOfWeek === 2 || dayOfWeek === 4) {
-          // Busy class days: 2 - 3 sessions
-          count = 2 + (i % 2);
-          topic = "Bài tập về nhà: " + studyTopics[i % studyTopics.length];
-        } else if (dayOfWeek === 5) {
-          // Friday night chill / rest: 0 or 1 session
-          count = i % 3 === 0 ? 1 : 0;
-        } else {
-          count = 1 + (i % 3);
-          topic = "Tự học: " + studyTopics[i % studyTopics.length];
-        }
-      }
-      // PHASE 4: Recent Active Streak (Last 14 days up to today)
-      else if (i < 15 && i > 0) {
-        // Continuous, unbroken 14-day streak!
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-          count = 4 + (i % 3); // 4 - 6 sessions
+          count = 4 + (i % 3); // 4 - 6 sessions on weekends
           topic = "Cuối tuần tập trung cao độ: " + studyTopics[i % studyTopics.length];
         } else {
-          count = 2 + (i % 3); // 2 - 4 sessions
-          topic = "Tập trung buổi tối: " + studyTopics[i % studyTopics.length];
+          count = 2 + (i % 3); // 2 - 4 sessions on weekdays
+          topic = "Buổi tối tự học: " + studyTopics[i % studyTopics.length];
         }
       }
       // TODAY
       else if (i === 0) {
-        count = 3; // 3 sessions completed today
-        topic = "Hôm nay: 2 phiên Pomodoro + 1 lượt luyện trắc nghiệm VSA 320";
+        count = 4;
+        topic = "Hôm nay: 2 phiên Pomodoro + 2 bài luyện trắc nghiệm VSA 320";
+      }
+      // 2. SEMESTER START & PRACTICE (14 - 45 days ago, ~ late Aug to mid Sep)
+      else if (i >= 14 && i < 45) {
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          count = 3 + (i % 3); // 3 - 5 sessions
+          topic = "Cày bài tại quán cà phê: " + studyTopics[i % studyTopics.length];
+        } else if (dayOfWeek === 2 || dayOfWeek === 4) {
+          count = 2 + (i % 2); // 2 - 3 sessions
+          topic = "Làm bài tập về nhà: " + studyTopics[i % studyTopics.length];
+        } else if (dayOfWeek === 5) {
+          count = (i % 3 === 0) ? 1 : 0; // Friday rest
+        } else {
+          count = 1 + (i % 2);
+          topic = "Đọc chuẩn mực kiểm toán: " + studyTopics[i % studyTopics.length];
+        }
+      }
+      // 3. SUMMER BREAK (46 - 85 days ago, ~ mid July to mid August)
+      else if (i >= 45 && i < 85) {
+        // Sporadic light study during summer vacation
+        if (dayOfWeek === 0 || (i % 4 === 0)) {
+          count = 1 + (i % 2); // 1 or 2 sessions
+          topic = "Tự đọc tài liệu hè: " + studyTopics[i % studyTopics.length];
+        } else {
+          count = 0; // Rest day
+        }
+      }
+      // 4. FINAL EXAMS SEMESTER 2 CRUNCH (86 - 110 days ago, ~ late June)
+      else if (i >= 85 && i <= 110) {
+        // High intensity exam revision (4 - 7 sessions)
+        const rand = (i * 7) % 10;
+        if (rand > 1) {
+          count = 4 + (i % 4); // 4 - 7 sessions
+          topic = "Mùa thi cuối kỳ: " + studyTopics[i % studyTopics.length];
+        } else {
+          count = 1;
+        }
+      }
+      // 5. MIDTERM TESTS & CLASS PROJECTS (111 - 140 days ago, ~ May)
+      else {
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          count = 3 + (i % 2);
+          topic = "Ôn tập giữa kỳ: " + studyTopics[i % studyTopics.length];
+        } else if (i % 3 === 0) {
+          count = 2;
+          topic = "Thảo luận nhóm kiểm toán: " + studyTopics[i % studyTopics.length];
+        } else {
+          count = 0;
+        }
       }
 
       if (count > 0) {
         const pomos = Math.max(1, Math.floor(count * 0.65));
         const quizzes = count >= 3 ? Math.floor(count * 0.25) : 0;
-        const notes = count - pomos - quizzes;
+        const notes = Math.max(0, count - pomos - quizzes);
 
         data[dateStr] = {
-          count: count,
-          pomos: pomos,
-          quizzes: quizzes,
-          notes: Math.max(0, notes),
+          count,
+          pomos,
+          quizzes,
+          notes,
           topic: topic || studyTopics[i % studyTopics.length]
         };
       }
@@ -131,7 +149,7 @@ export class StudyHeatmap {
 
   static recordTodayActivity(type = 'pomo', amount = 1) {
     const data = this.getHeatmapData();
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = this.formatLocalDate(new Date());
 
     if (!data[todayStr]) {
       data[todayStr] = { count: 0, pomos: 0, quizzes: 0, notes: 0, topic: "Hoạt động tự học hôm nay" };
@@ -154,9 +172,8 @@ export class StudyHeatmap {
     let streak = 0;
     let checkDate = new Date(today);
 
-    // Calculate current streak backward from today
     while (true) {
-      const dateStr = checkDate.toISOString().split('T')[0];
+      const dateStr = this.formatLocalDate(checkDate);
       if (data[dateStr] && data[dateStr].count > 0) {
         streak++;
         checkDate.setDate(checkDate.getDate() - 1);
@@ -174,7 +191,7 @@ export class StudyHeatmap {
       totalSessions += (entry.count || 0);
     });
 
-    const todayStr = today.toISOString().split('T')[0];
+    const todayStr = this.formatLocalDate(today);
     const todayCount = data[todayStr]?.count || 0;
 
     return {
@@ -192,8 +209,8 @@ export class StudyHeatmap {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Number of days to show: 16 weeks * 7 = 112 days
-    const totalDays = 112;
+    // Number of days to show: 20 weeks * 7 = 140 days
+    const totalDays = 140;
     const startDate = new Date(today);
     startDate.setDate(startDate.getDate() - totalDays + 1);
 
@@ -206,14 +223,14 @@ export class StudyHeatmap {
     const loopDate = new Date(startDate);
 
     while (loopDate <= today || currentWeek.length > 0) {
-      const dateStr = loopDate.toISOString().split('T')[0];
+      const dateStr = this.formatLocalDate(loopDate);
       const entry = data[dateStr];
       const count = entry ? entry.count : 0;
 
       let level = 0;
-      if (count >= 6) level = 4;
-      else if (count >= 4) level = 3;
-      else if (count >= 2) level = 2;
+      if (count >= 7) level = 4;
+      else if (count >= 5) level = 3;
+      else if (count >= 3) level = 2;
       else if (count >= 1) level = 1;
 
       const isFuture = loopDate > today;
@@ -224,6 +241,7 @@ export class StudyHeatmap {
         level: isFuture ? -1 : level,
         isFuture,
         entry: entry || null,
+        month: loopDate.getMonth(),
         dayName: loopDate.toLocaleDateString('vi-VN', { weekday: 'short' }),
         formattedDate: loopDate.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
       });
@@ -237,7 +255,22 @@ export class StudyHeatmap {
       loopDate.setDate(loopDate.getDate() + 1);
     }
 
-    // Build Heatmap HTML
+    // Build Month Labels Row aligned to weeks
+    const monthNames = ['Thg 1', 'Thg 2', 'Thg 3', 'Thg 4', 'Thg 5', 'Thg 6', 'Thg 7', 'Thg 8', 'Thg 9', 'Thg 10', 'Thg 11', 'Thg 12'];
+    let lastMonth = -1;
+    let monthLabelsHtml = '';
+    const colWidth = 19; // 15px cell + 4px gap
+
+    weeks.forEach((week, wIdx) => {
+      const firstDay = week[0];
+      if (firstDay && firstDay.month !== lastMonth) {
+        lastMonth = firstDay.month;
+        const leftPos = wIdx * colWidth;
+        monthLabelsHtml += `<span class="heatmap-month-label" style="left: ${leftPos}px;">${monthNames[firstDay.month]}</span>`;
+      }
+    });
+
+    // Build Weeks Columns HTML
     let cellsHtml = '';
     weeks.forEach(week => {
       cellsHtml += '<div class="heatmap-week-col">';
@@ -255,7 +288,7 @@ export class StudyHeatmap {
                  data-pomos="${day.entry?.pomos || 0}"
                  data-quizzes="${day.entry?.quizzes || 0}"
                  data-notes="${day.entry?.notes || 0}"
-                 data-topic="${day.entry?.topic || 'Nghỉ ngơi hoặc tự học nhẹ'}"
+                 data-topic="${day.entry?.topic || 'Nghỉ ngơi hoặc thư giãn'}"
                  title="${tooltip}">
             </div>
           `;
@@ -266,17 +299,30 @@ export class StudyHeatmap {
 
     container.innerHTML = `
       <div class="heatmap-scroll-area">
-        <div class="heatmap-days-legend">
-          <span>T2</span>
-          <span>T3</span>
-          <span>T4</span>
-          <span>T5</span>
-          <span>T6</span>
-          <span>T7</span>
-          <span>CN</span>
-        </div>
-        <div class="heatmap-grid-weeks">
-          ${cellsHtml}
+        <div class="heatmap-wrapper">
+          <!-- Month Header Row -->
+          <div class="heatmap-months-header">
+            <div class="heatmap-days-legend-spacer"></div>
+            <div class="heatmap-months-row">
+              ${monthLabelsHtml}
+            </div>
+          </div>
+
+          <!-- Heatmap Grid Body -->
+          <div class="heatmap-body">
+            <div class="heatmap-days-legend">
+              <span class="day-lbl">T2</span>
+              <span class="day-lbl"></span>
+              <span class="day-lbl">T4</span>
+              <span class="day-lbl"></span>
+              <span class="day-lbl">T6</span>
+              <span class="day-lbl"></span>
+              <span class="day-lbl">CN</span>
+            </div>
+            <div class="heatmap-grid-weeks">
+              ${cellsHtml}
+            </div>
+          </div>
         </div>
       </div>
     `;
@@ -299,20 +345,20 @@ export class StudyHeatmap {
 
       if (count === 0) {
         detailPanel.innerHTML = `
-          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-            <span>🍃</span>
+          <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <span style="font-size:1.1rem;">🍃</span>
             <strong>${dateStr}:</strong>
-            <span>Ngày nghỉ ngơi, nạp lại năng lượng hoặc đi dạo uống trà ☕</span>
+            <span>Ngày nghỉ xả hơi, nạp lại năng lượng sau những ngày cày chuẩn mực! ☕✨</span>
           </div>
         `;
       } else {
         detailPanel.innerHTML = `
-          <div style="display:flex; align-items:center; gap:0.5rem; flex-wrap:wrap;">
-            <span>🔥</span>
+          <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
+            <span style="font-size:1.1rem;">🔥</span>
             <strong>${dateStr}:</strong>
-            <span class="badge badge-yellow">${count} phiên học</span>
-            <span style="color:var(--text-secondary);">(${pomos} Pomodoro · ${quizzes} Trắc nghiệm · ${notes} Ghi chú VSA)</span>
-            <span style="color:var(--brown-800); font-weight:500;">— 📖 ${topic}</span>
+            <span class="badge badge-yellow" style="font-weight:700;">${count} phiên học tập</span>
+            <span style="color:var(--text-secondary); font-size:0.84rem;">(${pomos} Pomodoro · ${quizzes} Trắc nghiệm · ${notes} Ghi chú VSA)</span>
+            <span style="color:var(--brown-800); font-weight:600;">— 📖 ${topic}</span>
           </div>
         `;
       }
@@ -324,7 +370,7 @@ export class StudyHeatmap {
     });
 
     // Select today cell by default
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = this.formatLocalDate(today);
     const todayCell = container.querySelector(`.heatmap-cell[data-date="${todayStr}"]`);
     if (todayCell) {
       showDayDetail(todayCell);
