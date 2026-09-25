@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rita's Study Lounge | Góc Học Tập & Lưu Trữ Tài Liệu Kiểm Toán Chill</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Trang web học tập phong cách ấm áp chill chill, lưu trữ và tra cứu tài liệu học tập, chuẩn mực kiểm toán VSA/ISA, tính mức trọng yếu và đồng hồ Pomodoro thư giãn dành cho sinh viên kinh tế chuyên ngành Kiểm toán.">
+  <meta name="keywords" content="kiểm toán, tài liệu kiểm toán, VSA, sinh viên kinh tế, kiểm toán BCTC, Pomodoro chill, Rita Hub">
+  <meta name="author" content="Rita Hub">
+
+  <!-- Google Fonts: Outfit & Playfair Display -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- Site Header & Sticky Navbar -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <!-- Brand Logo & Title -->
+      <div class="brand-wrapper">
+        <img src="assets/images/logo.jpg" alt="Rita Hub Logo" class="brand-logo" id="site-logo">
+        <div>
+          <div class="brand-title">
+            Rita Hub <span style="font-size: 1.1rem;">☕✨</span>
+          </div>
+          <div class="brand-tagline">Audit & Cozy Study Lounge</div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="nav-tabs" role="tablist" aria-label="Giao diện chính">
+        <button class="nav-tab-btn active" data-tab="docs" id="tab-btn-docs" role="tab" aria-selected="true">
+          <span>📚</span> Kho Tài Liệu
+        </button>
+        <button class="nav-tab-btn" data-tab="lounge" id="tab-btn-lounge" role="tab" aria-selected="false">
+          <span>☕</span> Bàn Học Pomodoro
+        </button>
+        <button class="nav-tab-btn" data-tab="toolkit" id="tab-btn-toolkit" role="tab" aria-selected="false">
+          <span>🧮</span> Sổ Tay & Trọng Yếu
+        </button>
+        <button class="nav-tab-btn" data-tab="study" id="tab-btn-study" role="tab" aria-selected="false">
+          <span>📝</span> Ghi Chú & Thi
+        </button>
+      </nav>
+
+      <!-- Action Buttons & Theme Toggle -->
+      <div class="nav-actions">
+        <!-- Quick Search (Navbar) -->
+        <div style="position: relative; display: none;" class="d-md-block">
+          <input type="text" id="nav-search-input" placeholder="Tìm tài liệu..." style="padding: 0.45rem 0.9rem; border-radius: 9999px; border: 1px solid var(--border-subtle); background: var(--bg-secondary); font-size: 0.85rem; outline: none; width: 150px;">
+        </div>
+
+        <!-- Master Sound Toggle -->
+        <button class="icon-btn" id="nav-audio-btn" title="Bật/Tắt âm thanh thư giãn" aria-label="Âm thanh thư giãn">
+          🎵
+        </button>
+
+        <!-- Theme Toggle Button -->
+        <button class="icon-btn" id="theme-toggle-btn" title="Đổi giao diện màu sáng/tối" aria-label="Đổi giao diện">
+          🌙
+        </button>
+
+        <!-- Backup & Restore Modal Trigger -->
+        <button class="icon-btn" id="btn-open-backup-modal" title="Sao lưu / Khôi phục dữ liệu JSON" aria-label="Sao lưu">
+          📦
+        </button>
+
+        <!-- Add Document Button -->
+        <button class="btn-primary" id="btn-add-doc">
+          <span>✨</span> Thêm Tài Liệu
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container">
+    
+    <!-- Hero Banner Section -->
+    <section class="hero-section" aria-label="Chào mừng">
+      <div class="hero-grid">
+        <div class="hero-text-card">
+          <div class="hero-greeting">
+            <span class="badge badge-yellow">🌸 Chào mừng trở lại, Rita</span>
+            <span>Hôm nay hãy học thật thảnh thơi nhé</span>
+          </div>
+
+          <h1 class="hero-headline">
+            Góc nhỏ bình yên của <span class="hero-highlight">nữ kiểm toán viên</span> tương lai.
+          </h1>
+
+          <p class="hero-subtext">
+            Nơi cất giữ slide bài giảng, tóm tắt chuẩn mực VSA, mẫu giấy làm việc (Working Paper) và cùng nhau cân đối những con số phức tạp bên tách latte ngọt ngào.
+          </p>
+
+          <!-- Daily Quote Affirmation Card -->
+          <div class="quote-card">
+            <div class="quote-icon">“</div>
+            <div class="quote-content">
+              <p class="quote-text" id="daily-quote-text">
+                Bảng cân đối phát sinh rồi sẽ cân, những nỗ lực hôm nay của Rita rồi sẽ được đền đáp xứng đáng! ☕✨
+              </p>
+              <div class="quote-author">Lời nhắc dịu dàng mỗi ngày · Rita Hub</div>
+            </div>
+            <button class="quote-refresh-btn" id="refresh-quote-btn" title="Đổi câu truyền động lực khác">
+              🔄
+            </button>
+          </div>
+
+          <!-- Quick Stats Bar -->
+          <div class="quick-stats-bar">
+            <div class="stat-item">
+              <span class="stat-value" id="stat-docs-count">8</span>
+              <span class="stat-label">Tài liệu đã lưu</span>
+            </div>
+            <div class="stat-item" style="border-left: 1px solid var(--border-medium); padding-left: 1.5rem;">
+              <span class="stat-value" id="stat-subjects-count">6</span>
+              <span class="stat-label">Môn học chuyên ngành</span>
+            </div>
+            <div class="stat-item" style="border-left: 1px solid var(--border-medium); padding-left: 1.5rem;">
+              <span class="stat-value" id="stat-pomo-count">0</span>
+              <span class="stat-label">Phiên Pomodoro hoàn thành</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Visual Illustration Card -->
+        <div class="hero-visual-card">
+          <img src="assets/images/hero-cozy.jpg" alt="Góc học tập ấm áp của nữ sinh viên kiểm toán" class="hero-img">
+          
+          <div class="hero-chip hero-chip-1">
+            <span>📊</span> VSA 320 · Mức trọng yếu
+          </div>
+          <div class="hero-chip hero-chip-2">
+            <span>☕</span> Latte art & Báo cáo tài chính
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 1: KHO TÀI LIỆU HỌC TẬP (DOCUMENT HUB)
+         ==================================================================== -->
+    <section class="tab-pane active" id="tab-docs" role="tabpanel" aria-labelledby="tab-btn-docs">
+      <div class="doc-hub-header">
+        
+        <!-- Category Filter Carousel / Scroll -->
+        <div class="category-scroll-container">
+          <div class="category-pills">
+            <button class="category-pill active" data-category="all">🌟 Tất cả môn học</button>
+            <button class="category-pill" data-category="audit-standards">📜 Chuẩn mực VSA / ISA</button>
+            <button class="category-pill" data-category="financial-audit">🔍 Kiểm toán BCTC</button>
+            <button class="category-pill" data-category="working-papers">📂 Giấy làm việc (W/P)</button>
+            <button class="category-pill" data-category="audit-basics">📚 Kiểm toán căn bản</button>
+            <button class="category-pill" data-category="accounting-ifrs">📑 Kế toán tài chính & IFRS</button>
+            <button class="category-pill" data-category="tax-law">⚖️ Thuế & Luật kinh tế</button>
+            <button class="category-pill" data-category="acca-cpa">🎓 ACCA / CPA Ôn thi</button>
+            <button class="category-pill" data-category="internal-control">🛡️ KSNB & Rủi ro</button>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="filter-toolbar">
+          <div class="search-input-wrapper">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="doc-search-input" class="search-input" placeholder="Tìm kiếm theo tiêu đề, chuẩn mực, từ khóa (#VSA315, Trọng yếu...)...">
+          </div>
+
+          <div class="toolbar-controls">
+            <!-- Format Filter -->
+            <select class="filter-select" id="doc-format-select" aria-label="Lọc theo định dạng">
+              <option value="all">📁 Tất cả định dạng</option>
+              <option value="summary">📝 Tóm tắt / Cheat Sheet</option>
+              <option value="slide">📑 Slide bài giảng</option>
+              <option value="excel">📊 Mẫu W/P Excel</option>
+              <option value="exam">🎯 Đề thi & Đáp án</option>
+              <option value="link">🔗 Ebook / Liên kết</option>
+            </select>
+
+            <!-- Favorites Toggle -->
+            <button class="fav-filter-btn" id="filter-fav-btn" title="Chỉ hiện tài liệu đánh dấu yêu thích">
+              <span>❤️</span> Yêu thích
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Documents Grid Cards -->
+      <div class="doc-grid" id="doc-grid">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 2: BÀN HỌC POMODORO & ÂM THANH CHILL
+         ==================================================================== -->
+    <section class="tab-pane" id="tab-lounge" role="tabpanel" aria-labelledby="tab-btn-lounge">
+      <div class="lounge-grid">
+        
+        <!-- Pomodoro Timer Box -->
+        <div class="pomodoro-card">
+          <div class="pomo-mode-switch">
+            <button class="pomo-mode-btn active" data-mode="focus">🎯 Tập trung (25p)</button>
+            <button class="pomo-mode-btn" data-mode="shortBreak">☕ Nghỉ ngắn (5p)</button>
+            <button class="pomo-mode-btn" data-mode="longBreak">🌿 Nghỉ dài (15p)</button>
+          </div>
+
+          <!-- Circular Clock Dial -->
+          <div class="timer-dial-container">
+            <svg class="timer-svg" viewBox="0 0 240 240">
+              <circle class="timer-track-circle" cx="120" cy="120" r="110" />
+              <circle class="timer-progress-circle" id="timer-progress-circle" cx="120" cy="120" r="110" />
+            </svg>
+            <div class="timer-display">
+              <div class="timer-digits" id="timer-digits">25:00</div>
+              <div class="timer-sublabel" id="timer-mode-label">Deep Study Session</div>
+            </div>
+          </div>
+
+          <div class="pomo-controls">
+            <button class="btn-pomo-main" id="btn-pomo-toggle">Bắt đầu ▶️</button>
+            <button class="btn-pomo-reset" id="btn-pomo-reset" title="Đặt lại đồng hồ">🔄</button>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 1.5rem;">
+            Chuông kết thúc êm dịu sẽ phát khi hết giờ. Giữ tâm trí bình yên và thư thái nhé!
+          </p>
+        </div>
+
+        <!-- Ambient Sound Mixer Box -->
+        <div class="ambient-mixer-card">
+          <div class="mixer-header">
+            <div class="mixer-title">
+              <span>🎧</span> Ambient Sound Mixer
+            </div>
+            <span class="badge badge-yellow">Âm thanh tự nhiên</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: var(--text-secondary); margin-top: -0.5rem;">
+            Tạo không gian quán cà phê acoustic và tiếng mưa rơi ngay trên bàn học của bạn. Hoạt động mượt mà offline không lo mạng chập chờn!
+          </p>
+
+          <div class="sound-tracks-list">
+            <!-- Track 1: Rain -->
+            <div class="sound-track-row" id="track-row-rain">
+              <span class="track-icon">🌧️</span>
+              <div class="track-info">
+                <span class="track-name">Mưa êm ngoài cửa sổ</span>
+                <span class="track-desc">Tiếng mưa rơi rả rích dịu êm</span>
+              </div>
+              <button class="track-toggle-btn" id="track-btn-rain" title="Bật/Tắt tiếng mưa">▶</button>
+              <input type="range" class="volume-slider" id="track-vol-rain" min="0" max="1" step="0.05" value="0.4" aria-label="Âm lượng mưa">
+            </div>
+
+            <!-- Track 2: Cafe Ambience -->
+            <div class="sound-track-row" id="track-row-cafe">
+              <span class="track-icon">☕</span>
+              <div class="track-info">
+                <span class="track-name">Quán Cà Phê Ấm</span>
+                <span class="track-desc">Không gian tiếng thì thầm thư thái</span>
+              </div>
+              <button class="track-toggle-btn" id="track-btn-cafe" title="Bật/Tắt tiếng quán cà phê">▶</button>
+              <input type="range" class="volume-slider" id="track-vol-cafe" min="0" max="1" step="0.05" value="0.35" aria-label="Âm lượng quán cà phê">
+            </div>
+
+            <!-- Track 3: Typing -->
+            <div class="sound-track-row" id="track-row-typing">
+              <span class="track-icon">⌨️</span>
+              <div class="track-info">
+                <span class="track-name">Gõ phím cơ êm ái</span>
+                <span class="track-desc">Nhịp gõ lạch cạch đều đặn</span>
+              </div>
+              <button class="track-toggle-btn" id="track-btn-typing" title="Bật/Tắt tiếng gõ phím">▶</button>
+              <input type="range" class="volume-slider" id="track-vol-typing" min="0" max="1" step="0.05" value="0.25" aria-label="Âm lượng gõ phím">
+            </div>
+
+            <!-- Track 4: Book Pages -->
+            <div class="sound-track-row" id="track-row-books">
+              <span class="track-icon">📖</span>
+              <div class="track-info">
+                <span class="track-name">Tiếng lật trang giáo trình</span>
+                <span class="track-desc">Âm thanh giấy sột soạt nhẹ nhàng</span>
+              </div>
+              <button class="track-toggle-btn" id="track-btn-books" title="Bật/Tắt tiếng lật sách">▶</button>
+              <input type="range" class="volume-slider" id="track-vol-books" min="0" max="1" step="0.05" value="0.3" aria-label="Âm lượng lật sách">
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 3: SỔ TAY BỎ TÚI & CÔNG CỤ KIỂM TOÁN (AUDITOR'S TOOLKIT)
+         ==================================================================== -->
+    <section class="tab-pane" id="tab-toolkit" role="tabpanel" aria-labelledby="tab-btn-toolkit">
+      <div class="toolkit-container">
+        
+        <!-- Tool 1: Materiality Calculator (VSA 320) -->
+        <div class="calc-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2 class="serif-heading" style="font-size:1.5rem;">🧮 Máy Tính Mức Trọng Yếu Kiểm Toán (VSA 320)</h2>
+              <p style="font-size:0.9rem; color:var(--text-secondary); margin-top:0.25rem;">
+                Xác định Mức trọng yếu tổng thể (OM), Mức trọng yếu thực hiện (PM) và Ngưỡng sai sót có thể bỏ qua (SUD) nhanh chóng.
+              </p>
+            </div>
+            <span class="badge badge-yellow">Chuẩn mực VSA 320</span>
+          </div>
+
+          <div class="calc-grid">
+            <!-- Form Inputs -->
+            <div class="calc-form-group">
+              <div>
+                <label class="input-label" for="calc-benchmark">
+                  <span>Tiêu thức chọn làm gốc (Benchmark Basis)</span>
+                </label>
+                <select id="calc-benchmark" class="form-control" style="width:100%;">
+                  <option value="pbt">Lợi nhuận trước thuế (PBT) - Khuyên dùng DN hoạt động vì lợi nhuận</option>
+                  <option value="revenue">Doanh thu thuần (Revenue) - Phù hợp DN biên lợi nhuận mỏng</option>
+                  <option value="assets">Tổng tài sản (Total Assets) - Phù hợp tổ chức tài chính, BĐS</option>
+                  <option value="equity">Vốn chủ sở hữu (Equity) - Phù hợp quỹ đầu tư, startup</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="input-label" for="calc-base-amount">
+                  <span>Giá trị cơ sở (VNĐ)</span>
+                  <span style="font-size:0.75rem; color:var(--text-muted);">Ví dụ: 10,000,000,000</span>
+                </label>
+                <input type="number" id="calc-base-amount" class="form-control" value="10000000000" step="1000000" style="width:100%;">
+              </div>
+
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div>
+                  <label class="input-label" for="calc-pct">
+                    <span>Tỷ lệ áp dụng (%)</span>
+                    <span id="calc-pct-range-hint" style="font-size:0.75rem; color:var(--yellow-700);">Khuyến nghị: 5% - 10%</span>
+                  </label>
+                  <input type="number" id="calc-pct" class="form-control" value="5" step="0.1" style="width:100%;">
+                </div>
+
+                <div>
+                  <label class="input-label" for="calc-risk">
+                    <span>Đánh giá rủi ro (RoMM)</span>
+                  </label>
+                  <select id="calc-risk" class="form-control" style="width:100%;">
+                    <option value="high">Cao (PM = 50% OM)</option>
+                    <option value="medium" selected>Trung bình (PM = 65% OM)</option>
+                    <option value="low">Thấp (PM = 75% OM)</option>
+                  </select>
+                </div>
+              </div>
+
+              <button class="btn-primary" id="btn-calc-materiality" style="margin-top:0.5rem; justify-content:center;">
+                ✨ Tính toán ngay
+              </button>
+            </div>
+
+            <!-- Result Panel -->
+            <div class="calc-result-panel">
+              <div class="result-metric-card">
+                <div class="metric-title">1. Mức Trọng Yếu Tổng Thể (Overall Materiality - OM)</div>
+                <div class="metric-number" id="res-om-amount">500.000.000 đ</div>
+                <div class="metric-desc">Ngưỡng sai sót tối đa chấp nhận được trên toàn bộ BCTC.</div>
+              </div>
+
+              <div class="result-metric-card pm-card">
+                <div class="metric-title">2. Mức Trọng Yếu Thực Hiện (Performance Materiality - PM)</div>
+                <div class="metric-number" id="res-pm-amount">325.000.000 đ</div>
+                <div class="metric-desc">Dùng để chọn mẫu thử nghiệm chi tiết và giới hạn sai sót gộp.</div>
+              </div>
+
+              <div class="result-metric-card trivial-card">
+                <div class="metric-title">3. Ngưỡng Sai Sót Có Thể Bỏ Qua (Clearly Trivial / SUD)</div>
+                <div class="metric-number" id="res-trivial-amount">25.000.000 đ</div>
+                <div class="metric-desc">(5% OM) Các sai sót dưới mức này không cần tổng hợp vào bảng SUD.</div>
+              </div>
+
+              <div style="font-size:0.8rem; color:var(--text-muted); font-style:italic;" id="res-note-text">
+                Áp dụng cho doanh nghiệp kinh doanh ổn định, có lãi.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tool 2: 3-Phase Interactive Audit Checklist -->
+        <div class="checklist-section-wrapper">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2 class="serif-heading" style="font-size:1.45rem;">📋 Checklist 3 Giai Đoạn Cuộc Kiểm Toán</h2>
+              <p style="font-size:0.9rem; color:var(--text-secondary); margin-top:0.25rem;">
+                Hệ thống hóa toàn bộ các thủ tục kiểm toán từ tiền hợp đồng đến phát hành báo cáo kiểm toán độc lập.
+              </p>
+            </div>
+            <span class="badge badge-brown">Quy trình chuẩn</span>
+          </div>
+
+          <div class="checklist-phases-grid" id="checklist-phases-grid">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Tool 3: Audit Opinion Decision Matrix -->
+        <div class="opinion-matrix-card">
+          <h2 class="serif-heading" style="font-size:1.45rem;">⚖️ Ma Trận Quyết Định Ý Kiến Kiểm Toán (VSA 700 & 705)</h2>
+          <p style="font-size:0.9rem; color:var(--text-secondary); margin-top:0.25rem;">
+            Bảng đối chiếu lựa chọn 4 loại ý kiến kiểm toán dựa trên Bản chất sai phạm và Mức độ lan tỏa (Pervasive).
+          </p>
+
+          <div class="opinion-table-wrapper">
+            <table class="opinion-table">
+              <thead>
+                <tr>
+                  <th>Bản chất của vấn đề dẫn đến ý kiến sửa đổi</th>
+                  <th>Trọng yếu nhưng KHÔNG lan tỏa (Material but NOT pervasive)</th>
+                  <th>Trọng yếu VÀ LAN TỎA (Material AND pervasive)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Báo cáo tài chính có sai sót trọng yếu</strong><br><small style="color:var(--text-muted);">(Bất đồng quan điểm về chính sách kế toán hoặc thuyết minh)</small></td>
+                  <td><span class="badge badge-yellow" style="font-size:0.85rem;">Ý kiến Ngoại trừ (Qualified Opinion)</span><br><small>"Ngoại trừ ảnh hưởng của vấn đề nêu trên..."</small></td>
+                  <td><span class="badge badge-rose" style="font-size:0.85rem;">Ý kiến Trái ngược (Adverse Opinion)</span><br><small>"BCTC không phản ánh trung thực và hợp lý..."</small></td>
+                </tr>
+                <tr>
+                  <td><strong>Không thể thu thập đầy đủ bằng chứng thích hợp</strong><br><small style="color:var(--text-muted);">(Bị giới hạn phạm vi kiểm toán, mất sổ sách, không kiểm kê)</small></td>
+                  <td><span class="badge badge-yellow" style="font-size:0.85rem;">Ý kiến Ngoại trừ (Qualified Opinion)</span><br><small>"Ngoại trừ ảnh hưởng có thể có..."</small></td>
+                  <td><span class="badge" style="background:#593722; color:#FFF; font-size:0.85rem;">Từ chối đưa ra ý kiến (Disclaimer)</span><br><small>"Chúng tôi không thể đưa ra ý kiến kiểm toán..."</small></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tool 4: Auditing Dictionary -->
+        <div class="dict-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+            <div>
+              <h2 class="serif-heading" style="font-size:1.45rem;">📖 Từ Điển Thuật Ngữ Kiểm Toán Song Ngữ</h2>
+              <p style="font-size:0.9rem; color:var(--text-secondary); margin-top:0.25rem;">
+                Tra cứu nhanh các khái niệm ACCA, CPA, VSA cốt lõi phục vụ ôn thi và làm bài tập.
+              </p>
+            </div>
+            <div class="dict-search-wrapper">
+              <input type="text" id="dict-search-input" class="form-control" placeholder="Tra cứu thuật ngữ (Audit Risk, Inherent...)..." style="width:260px;">
+            </div>
+          </div>
+
+          <div class="dict-grid" id="dict-grid">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         TAB 4: GHI CHÚ NHANH & LỊCH DEADLINE (STUDY CORNER)
+         ==================================================================== -->
+    <section class="tab-pane" id="tab-study" role="tabpanel" aria-labelledby="tab-btn-study">
+      <div class="study-corner-grid">
+        
+        <!-- Sticky Notes Board -->
+        <div class="notes-board-card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <h2 class="serif-heading" style="font-size:1.45rem;">📌 Bảng Giấy Nhớ Của Rita</h2>
+              <p style="font-size:0.85rem; color:var(--text-secondary);">Dán các lưu ý nhỏ của thầy cô và mẹo làm bài thi.</p>
+            </div>
+            <button class="btn-primary" id="btn-add-sticky">
+              <span>+</span> Dán giấy nhớ
+            </button>
+          </div>
+
+          <div class="notes-grid" id="notes-grid">
+            <!-- Rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Exam Countdowns -->
+        <div class="exam-countdown-card">
+          <div>
+            <h2 class="serif-heading" style="font-size:1.45rem;">⏰ Đếm Ngược Lịch Thi</h2>
+            <p style="font-size:0.85rem; color:var(--text-secondary);">Cố gắng từng ngày để tự tin bước vào phòng thi nhé!</p>
+          </div>
+
+          <div class="countdown-list" id="countdown-list">
+            <!-- Rendered by app.js -->
+          </div>
+
+          <div style="background:var(--yellow-100); border-radius:var(--radius-md); padding:1rem; border:1px dashed var(--yellow-400); margin-top:1rem;">
+            <div style="font-weight:700; font-size:0.9rem; color:var(--yellow-900);">✨ Checklist đi thi Kiểm toán:</div>
+            <ul style="font-size:0.82rem; color:var(--yellow-900); padding-left:1.2rem; margin-top:0.4rem; line-height:1.5;">
+              <li>Máy tính bỏ túi còn đầy pin (không thể thiếu!)</li>
+              <li>Thẻ sinh viên & CCCD</li>
+              <li>Bút dạ quang màu vàng/cam để highlight đề bài</li>
+              <li>Văn bản chuẩn mực VSA / Luật thuế (nếu đề mở)</li>
+              <li>Bình nước nhỏ và tâm thế thật tự tin! 🌸</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container footer-content">
+      <p class="footer-quote">
+        “Mỗi số dư đều có nguyên do, mỗi cố gắng đều mang lại quả ngọt.” ☕📖
+      </p>
+      <p class="footer-credits">
+        Rita Hub · Designed with warm latte & honey gold for Auditing students · 2026
+      </p>
+    </div>
+  </footer>
+
+  <!-- ====================================================================
+       MODALS & DIALOGS
+       ==================================================================== -->
+
+  <!-- Modal 1: Add / Edit Document -->
+  <div class="modal-backdrop" id="modal-add-doc" role="dialog" aria-modal="true" aria-labelledby="modal-doc-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-doc-title">Thêm Tài Liệu Mới</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <form id="doc-form">
+        <div class="modal-body">
+          <div>
+            <label class="input-label" for="input-doc-title">Tên tài liệu / Giáo trình *</label>
+            <input type="text" id="input-doc-title" class="form-control" style="width:100%;" required placeholder="Ví dụ: Slide Bài Giảng Kiểm Toán BCTC Chương 4 - Hàng Tồn Kho">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div>
+              <label class="input-label" for="input-doc-subject">Chuyên ngành / Môn học</label>
+              <select id="input-doc-subject" class="form-control" style="width:100%;">
+                <option value="audit-standards">Chuẩn mực VSA / ISA</option>
+                <option value="financial-audit">Kiểm toán BCTC</option>
+                <option value="working-papers">Giấy làm việc (W/P)</option>
+                <option value="audit-basics">Kiểm toán căn bản</option>
+                <option value="accounting-ifrs">Kế toán tài chính & IFRS</option>
+                <option value="tax-law">Thuế & Luật kinh tế</option>
+                <option value="acca-cpa">ACCA / CPA Ôn thi</option>
+                <option value="internal-control">KSNB & Rủi ro</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="input-label" for="input-doc-format">Định dạng tài liệu</label>
+              <select id="input-doc-format" class="form-control" style="width:100%;">
+                <option value="summary">Tóm tắt / Cheat Sheet</option>
+                <option value="slide">Slide bài giảng</option>
+                <option value="excel">Mẫu W/P Excel</option>
+                <option value="exam">Đề thi & Đáp án</option>
+                <option value="link">Ebook / Liên kết</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div>
+              <label class="input-label" for="input-doc-semester">Học kỳ / Năm học</label>
+              <input type="text" id="input-doc-semester" class="form-control" style="width:100%;" placeholder="VD: Kỳ 1 - Năm 3">
+            </div>
+
+            <div>
+              <label class="input-label" for="input-doc-author">Giảng viên / Nguồn</label>
+              <input type="text" id="input-doc-author" class="form-control" style="width:100%;" placeholder="VD: Thầy Tuấn / Big4 Alumni">
+            </div>
+          </div>
+
+          <div>
+            <label class="input-label" for="input-doc-url">Đường dẫn tài liệu (Drive / Notion / Web Link)</label>
+            <input type="url" id="input-doc-url" class="form-control" style="width:100%;" placeholder="https://drive.google.com/...">
+          </div>
+
+          <div>
+            <label class="input-label" for="input-doc-tags">Thẻ tags (cách nhau bởi dấu phẩy)</label>
+            <input type="text" id="input-doc-tags" class="form-control" style="width:100%;" placeholder="VSA 320, Hàng tồn kho, Đề thi cũ">
+          </div>
+
+          <div>
+            <label class="input-label" for="input-doc-summary">Tóm tắt nội dung chính</label>
+            <textarea id="input-doc-summary" class="form-control" rows="3" style="width:100%; resize:vertical;" placeholder="Nội dung chính gồm những phần hành nào, kiến thức trọng tâm..."></textarea>
+          </div>
+
+          <div>
+            <label class="input-label" for="input-doc-exam-tips">💡 Ghi chú ôn thi & Cạm bẫy cần tránh</label>
+            <textarea id="input-doc-exam-tips" class="form-control" rows="2" style="width:100%; resize:vertical;" placeholder="Thầy cô hay hỏi phần nào, bẫy trắc nghiệm ở đâu..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline modal-close-trigger">Hủy</button>
+          <button type="submit" class="btn-primary">Lưu Tài Liệu 🌸</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 2: Preview Document Details -->
+  <div class="modal-backdrop" id="modal-preview-doc" role="dialog" aria-modal="true" aria-labelledby="preview-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="preview-title">Chi Tiết Tài Liệu</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+      <div class="modal-body" id="preview-modal-body">
+        <!-- Injected dynamically by app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Add Sticky Note -->
+  <div class="modal-backdrop" id="modal-add-sticky" role="dialog" aria-modal="true" aria-labelledby="sticky-modal-title">
+    <div class="modal-window" style="max-width: 440px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="sticky-modal-title">Dán Giấy Ghi Nhớ Mới</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <form id="sticky-note-form">
+        <div class="modal-body">
+          <div>
+            <label class="input-label" for="input-note-title">Tiêu đề ghi chú *</label>
+            <input type="text" id="input-note-title" class="form-control" style="width:100%;" required placeholder="VD: Nhắc nhở nộp bài tập lớn">
+          </div>
+
+          <div>
+            <label class="input-label" for="input-note-content">Nội dung ghi chú</label>
+            <textarea id="input-note-content" class="form-control" rows="4" style="width:100%; resize:vertical;" placeholder="Viết các ý chính cần nhớ..."></textarea>
+          </div>
+
+          <div>
+            <label class="input-label">Màu sắc giấy nhớ</label>
+            <div style="display:flex; gap:1rem; margin-top:0.35rem;">
+              <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+                <input type="radio" name="note-color" value="yellow" checked> Vàng kem
+              </label>
+              <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+                <input type="radio" name="note-color" value="peach"> Đào ấm
+              </label>
+              <label style="display:flex; align-items:center; gap:0.4rem; cursor:pointer;">
+                <input type="radio" name="note-color" value="cream"> Trà sữa
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline modal-close-trigger">Hủy</button>
+          <button type="submit" class="btn-primary">Dán Lên Bảng 📌</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 4: Backup & Restore -->
+  <div class="modal-backdrop" id="modal-backup" role="dialog" aria-modal="true" aria-labelledby="backup-modal-title">
+    <div class="modal-window" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="backup-modal-title">Sao Lưu & Khôi Phục Dữ Liệu</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background:var(--bg-secondary); padding:1rem; border-radius:var(--radius-md);">
+          <h4 style="font-size:0.95rem; color:var(--brown-900);">📦 Xuất bản sao lưu (JSON)</h4>
+          <p style="font-size:0.82rem; color:var(--text-secondary); margin:0.35rem 0 0.75rem;">
+            Tải về toàn bộ tài liệu, ghi chú và checklist đã lưu của bạn dưới dạng tệp tin an toàn.
+          </p>
+          <button class="btn-primary" id="btn-export-backup" style="font-size:0.85rem; width:100%; justify-content:center;">
+            ⬇️ Tải file sao lưu Rita_Backup.json
+          </button>
+        </div>
+
+        <div style="background:var(--bg-secondary); padding:1rem; border-radius:var(--radius-md);">
+          <h4 style="font-size:0.95rem; color:var(--brown-900);">📥 Khôi phục từ file sao lưu</h4>
+          <p style="font-size:0.82rem; color:var(--text-secondary); margin:0.35rem 0 0.75rem;">
+            Nhập lại file JSON sao lưu từ máy tính để phục hồi dữ liệu học tập.
+          </p>
+          <input type="file" id="import-file-input" accept=".json" class="form-control" style="width:100%; font-size:0.82rem;">
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-outline modal-close-trigger">Đóng</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript ES Module Entrypoint -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
