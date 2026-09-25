@@ -1,4 +1,5 @@
 // Rita's Study Lounge · Main Application Controller
+// Includes Dynamic Folder/Subject Management & In-depth Note/Summary Editing
 import { StorageManager } from './storage.js';
 import { soundEngine } from './audio.js';
 import { MaterialityCalculator } from './calculator.js';
@@ -7,11 +8,12 @@ import { DAILY_AFFIRMATIONS, AUDIT_DICTIONARY } from './data.js';
 class App {
   constructor() {
     this.activeTab = 'docs';
-    this.activeCategory = 'all';
+    this.activeFolderId = null; // null means viewing all folders
     this.activeFormat = 'all';
     this.searchQuery = '';
     this.onlyFavorites = false;
     this.editingDocId = null;
+    this.editingFolderId = null;
 
     // Pomodoro State
     this.pomoMode = 'focus'; // focus, shortBreak, longBreak
@@ -28,6 +30,7 @@ class App {
     this.initTheme();
     this.initNavigation();
     this.initDailyAffirmation();
+    this.initFolders();
     this.initDocumentsHub();
     this.initPomodoro();
     this.initAmbientAudio();
@@ -115,15 +118,199 @@ class App {
 
   updateStats() {
     const docs = StorageManager.getDocuments();
+    const folders = StorageManager.getFolders();
+
     const statDocsEl = document.getElementById('stat-docs-count');
     if (statDocsEl) statDocsEl.textContent = docs.length;
 
-    const subjects = new Set(docs.map(d => d.subject));
     const statSubjectsEl = document.getElementById('stat-subjects-count');
-    if (statSubjectsEl) statSubjectsEl.textContent = subjects.size;
+    if (statSubjectsEl) statSubjectsEl.textContent = folders.length;
 
     const statPomoEl = document.getElementById('stat-pomo-count');
     if (statPomoEl) statPomoEl.textContent = this.pomoCompletedCount;
+  }
+
+  // ==========================================
+  // Folders / Subjects Management
+  // ==========================================
+  initFolders() {
+    this.renderFolders();
+
+    // Create folder trigger
+    const createFolderBtn = document.getElementById('btn-create-folder');
+    if (createFolderBtn) {
+      createFolderBtn.addEventListener('click', () => {
+        this.openFolderModal();
+      });
+    }
+
+    // Active folder banner triggers
+    const backBtn = document.getElementById('btn-back-all-folders');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        this.activeFolderId = null;
+        this.updateActiveFolderBanner();
+        this.renderFolders();
+        this.renderDocuments();
+      });
+    }
+
+    const addDocToFolderBtn = document.getElementById('btn-add-doc-to-folder');
+    if (addDocToFolderBtn) {
+      addDocToFolderBtn.addEventListener('click', () => {
+        this.openAddDocumentModal(null, this.activeFolderId);
+      });
+    }
+
+    // Form folder submit
+    const folderForm = document.getElementById('folder-form');
+    if (folderForm) {
+      folderForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.handleSaveFolder();
+      });
+    }
+  }
+
+  renderFolders() {
+    const grid = document.getElementById('folder-grid');
+    if (!grid) return;
+
+    const folders = StorageManager.getFolders();
+    const docs = StorageManager.getDocuments();
+
+    grid.innerHTML = folders.map(folder => {
+      const count = docs.filter(d => d.folderId === folder.id).length;
+      const isActive = this.activeFolderId === folder.id;
+
+      return `
+        <div class="folder-card ${isActive ? 'active-folder' : ''}" data-id="${folder.id}">
+          <div class="folder-card-top">
+            <span class="folder-icon-large">${folder.icon || '📁'}</span>
+            <div class="folder-card-actions">
+              <button class="folder-action-btn btn-edit-folder" data-id="${folder.id}" title="Chỉnh sửa môn học">✏️</button>
+              <button class="folder-action-btn btn-delete-folder" data-id="${folder.id}" title="Xóa môn học">🗑️</button>
+            </div>
+          </div>
+          <div class="folder-card-name">${folder.name}</div>
+          <div class="folder-card-desc">${folder.description || 'Chưa có mô tả môn học.'}</div>
+          <div class="folder-card-footer">
+            <span>${count} tài liệu</span>
+            <span>Mở xem ➔</span>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // Attach folder click listeners
+    grid.querySelectorAll('.folder-card').forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.folder-card-actions')) return;
+        const id = card.getAttribute('data-id');
+        this.activeFolderId = id;
+        this.updateActiveFolderBanner();
+        this.renderFolders();
+        this.renderDocuments();
+      });
+    });
+
+    grid.querySelectorAll('.btn-edit-folder').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        this.openFolderModal(id);
+      });
+    });
+
+    grid.querySelectorAll('.btn-delete-folder').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-id');
+        const folder = StorageManager.getFolders().find(f => f.id === id);
+        if (!folder) return;
+
+        if (confirm(`Bạn có chắc muốn xóa môn học "${folder.name}" và toàn bộ tài liệu bên trong?`)) {
+          StorageManager.deleteFolder(id);
+          if (this.activeFolderId === id) {
+            this.activeFolderId = null;
+          }
+          this.updateActiveFolderBanner();
+          this.renderFolders();
+          this.renderDocuments();
+          this.updateStats();
+          this.showToast(`Đã xóa môn học "${folder.name}"`);
+        }
+      });
+    });
+
+    this.updateStats();
+  }
+
+  updateActiveFolderBanner() {
+    const banner = document.getElementById('active-folder-banner');
+    if (!banner) return;
+
+    if (!this.activeFolderId) {
+      banner.style.display = 'none';
+      return;
+    }
+
+    const folder = StorageManager.getFolders().find(f => f.id === this.activeFolderId);
+    if (!folder) {
+      this.activeFolderId = null;
+      banner.style.display = 'none';
+      return;
+    }
+
+    document.getElementById('banner-folder-icon').textContent = folder.icon || '📁';
+    document.getElementById('banner-folder-title').textContent = folder.name;
+    document.getElementById('banner-folder-desc').textContent = folder.description || 'Thư mục tài liệu môn học chuyên ngành';
+    banner.style.display = 'flex';
+  }
+
+  openFolderModal(folderId = null) {
+    this.editingFolderId = folderId;
+    const modalTitle = document.getElementById('modal-folder-title');
+    const form = document.getElementById('folder-form');
+    form.reset();
+
+    if (folderId) {
+      modalTitle.textContent = "Chỉnh Sửa Môn Học";
+      const folder = StorageManager.getFolders().find(f => f.id === folderId);
+      if (folder) {
+        document.getElementById('input-folder-name').value = folder.name || '';
+        document.getElementById('input-folder-icon').value = folder.icon || '📁';
+        document.getElementById('input-folder-color').value = folder.color || 'yellow';
+        document.getElementById('input-folder-desc').value = folder.description || '';
+      }
+    } else {
+      modalTitle.textContent = "Tạo Môn Học Mới";
+    }
+
+    this.openModal('modal-folder');
+  }
+
+  handleSaveFolder() {
+    const name = document.getElementById('input-folder-name').value.trim();
+    if (!name) return;
+
+    const icon = document.getElementById('input-folder-icon').value;
+    const color = document.getElementById('input-folder-color').value;
+    const description = document.getElementById('input-folder-desc').value.trim();
+
+    if (this.editingFolderId) {
+      StorageManager.updateFolder(this.editingFolderId, { name, icon, color, description });
+      this.showToast(`Đã cập nhật môn "${name}"! 📁`);
+    } else {
+      const newFolder = StorageManager.addFolder({ name, icon, color, description });
+      this.activeFolderId = newFolder.id;
+      this.showToast(`Đã tạo môn học "${name}" thành công! 🌸`);
+    }
+
+    this.closeAllModals();
+    this.updateActiveFolderBanner();
+    this.renderFolders();
+    this.renderDocuments();
   }
 
   // ==========================================
@@ -131,17 +318,6 @@ class App {
   // ==========================================
   initDocumentsHub() {
     this.renderDocuments();
-
-    // Category pills
-    const catPills = document.querySelectorAll('.category-pill');
-    catPills.forEach(pill => {
-      pill.addEventListener('click', () => {
-        catPills.forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        this.activeCategory = pill.getAttribute('data-category');
-        this.renderDocuments();
-      });
-    });
 
     // Format filter
     const formatSelect = document.getElementById('doc-format-select');
@@ -186,7 +362,7 @@ class App {
     const addDocBtn = document.getElementById('btn-add-doc');
     if (addDocBtn) {
       addDocBtn.addEventListener('click', () => {
-        this.openAddDocumentModal();
+        this.openAddDocumentModal(null, this.activeFolderId);
       });
     }
   }
@@ -196,13 +372,14 @@ class App {
     if (!grid) return;
 
     let docs = StorageManager.getDocuments();
+    const folders = StorageManager.getFolders();
 
-    // 1. Filter Category
-    if (this.activeCategory !== 'all') {
-      docs = docs.filter(d => d.subject === this.activeCategory);
+    // 1. Filter by Active Folder
+    if (this.activeFolderId) {
+      docs = docs.filter(d => d.folderId === this.activeFolderId);
     }
 
-    // 2. Filter Format
+    // 2. Filter by Format
     if (this.activeFormat !== 'all') {
       docs = docs.filter(d => d.format === this.activeFormat);
     }
@@ -215,23 +392,34 @@ class App {
     // 4. Search Query
     if (this.searchQuery) {
       docs = docs.filter(d => {
-        const text = `${d.title} ${d.summary} ${d.examTips || ''} ${(d.tags || []).join(' ')} ${d.author || ''}`.toLowerCase();
+        const text = `${d.title} ${d.summary || ''} ${d.examTips || ''} ${(d.tags || []).join(' ')} ${d.author || ''}`.toLowerCase();
         return text.includes(this.searchQuery);
       });
     }
 
+    // Empty State Handling
     if (docs.length === 0) {
+      const activeFolder = folders.find(f => f.id === this.activeFolderId);
+      const emptyTitle = activeFolder
+        ? `Môn "${activeFolder.name}" hiện chưa có tài liệu`
+        : `Kho tài liệu của Rita đang trống`;
+      const emptyDesc = activeFolder
+        ? `Hãy bấm nút bên dưới để thêm bài giảng, đề thi, tóm tắt hoặc ghi chú đầu tiên vào môn ${activeFolder.name} nhé!`
+        : `Bạn có thể bấm vào một môn học ở trên hoặc tạo môn học mới, sau đó thêm tài liệu học tập vào nhé! ✨`;
+
       grid.innerHTML = `
         <div class="empty-state" style="grid-column: 1 / -1;">
-          <div class="empty-state-icon">☕</div>
-          <h3 class="empty-state-title">Chưa tìm thấy tài liệu phù hợp</h3>
-          <p class="empty-state-desc">Hãy thử đổi từ khóa tìm kiếm hoặc chọn danh mục khác, hoặc thêm tài liệu mới vào góc học tập nhé!</p>
-          <button class="btn-primary" id="btn-empty-add-doc">✨ Thêm tài liệu mới</button>
+          <div class="empty-state-icon">☕📖</div>
+          <h3 class="empty-state-title">${emptyTitle}</h3>
+          <p class="empty-state-desc">${emptyDesc}</p>
+          <button class="btn-primary" id="btn-empty-add-doc">
+            ✨ + Thêm tài liệu hoặc tóm tắt mới
+          </button>
         </div>
       `;
       const emptyAddBtn = document.getElementById('btn-empty-add-doc');
       if (emptyAddBtn) {
-        emptyAddBtn.addEventListener('click', () => this.openAddDocumentModal());
+        emptyAddBtn.addEventListener('click', () => this.openAddDocumentModal(null, this.activeFolderId));
       }
       return;
     }
@@ -245,6 +433,7 @@ class App {
         link: '🔗'
       };
       const fIcon = formatIcons[doc.format] || '📄';
+      const folder = folders.find(f => f.id === doc.folderId) || { name: doc.folderName || 'Tài liệu', icon: '📁' };
       const tagsHtml = (doc.tags || []).map(t => `<span class="doc-tag">#${t}</span>`).join('');
 
       return `
@@ -252,7 +441,7 @@ class App {
           <div class="doc-card-header">
             <div class="doc-badge-group">
               <span class="badge badge-yellow">${fIcon} ${doc.formatName || doc.format}</span>
-              <span class="badge badge-brown">${doc.subjectName || doc.subject}</span>
+              <span class="badge badge-brown">${folder.icon} ${folder.name}</span>
             </div>
             <button class="fav-btn ${doc.favorite ? 'favorited' : ''}" data-id="${doc.id}" title="${doc.favorite ? 'Bỏ yêu thích' : 'Đánh dấu yêu thích'}">
               ${doc.favorite ? '❤️' : '🤍'}
@@ -261,11 +450,15 @@ class App {
 
           <h3 class="doc-card-title">${doc.title}</h3>
           
-          <p class="doc-card-summary">${doc.summary || 'Chưa có tóm tắt chi tiết.'}</p>
+          <!-- Summary Section Preview -->
+          <div class="doc-card-summary">
+            ${doc.summary ? doc.summary : '<em style="color:var(--text-muted);">Chưa có tóm tắt. Nhấn vào xem chi tiết để ghi tóm tắt...</em>'}
+          </div>
 
+          <!-- Study Notes / Exam Tips Preview -->
           ${doc.examTips ? `
             <div class="doc-exam-tip">
-              <strong>💡 Trọng tâm thi:</strong> ${doc.examTips}
+              <strong>💡 Ghi chú ôn thi:</strong> ${doc.examTips}
             </div>
           ` : ''}
 
@@ -275,15 +468,21 @@ class App {
 
           <div class="doc-card-footer">
             <div class="doc-meta-info">
-              <span>${doc.semester || 'Kỳ học'}</span> · <span>${doc.fileSize || 'Tài liệu'}</span>
+              <span>${doc.semester || 'Kỳ học'}</span> · <span>${doc.dateAdded || 'Mới thêm'}</span>
             </div>
             <div class="doc-card-actions">
               <button class="action-btn-sm btn-doc-preview" data-id="${doc.id}">
-                👁️ Xem chi tiết
+                👁️ Xem & Ghi chú
               </button>
-              <button class="action-btn-sm action-btn-primary btn-doc-open" data-url="${doc.url || '#'}" data-id="${doc.id}">
-                📖 Mở
-              </button>
+              ${doc.url && doc.url !== '#' ? `
+                <a href="${doc.url}" target="_blank" class="action-btn-sm action-btn-primary" style="text-decoration:none;">
+                  🔗 Mở tệp
+                </a>
+              ` : `
+                <button class="action-btn-sm action-btn-primary btn-doc-preview" data-id="${doc.id}">
+                  📖 Chi tiết
+                </button>
+              `}
             </div>
           </div>
         </article>
@@ -310,19 +509,296 @@ class App {
       });
     });
 
-    grid.querySelectorAll('.btn-doc-open').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const url = btn.getAttribute('data-url');
-        if (url && url !== '#') {
-          window.open(url, '_blank');
-        } else {
-          const id = btn.getAttribute('data-id');
-          this.openPreviewModal(id);
+    this.updateStats();
+  }
+
+  // ==========================================
+  // Add / Edit Document Modal
+  // ==========================================
+  populateFolderSelect(selectedFolderId = null) {
+    const select = document.getElementById('input-doc-folder');
+    if (!select) return;
+
+    const folders = StorageManager.getFolders();
+    if (folders.length === 0) {
+      select.innerHTML = '<option value="">(Chưa có môn học - Vui lòng tạo môn trước)</option>';
+      return;
+    }
+
+    select.innerHTML = folders.map(f => `
+      <option value="${f.id}" ${f.id === selectedFolderId ? 'selected' : ''}>
+        ${f.icon || '📁'} ${f.name}
+      </option>
+    `).join('');
+  }
+
+  openAddDocumentModal(docId = null, preselectFolderId = null) {
+    this.editingDocId = docId;
+    const modalTitle = document.getElementById('modal-doc-title');
+    const form = document.getElementById('doc-form');
+    form.reset();
+
+    const folders = StorageManager.getFolders();
+    if (folders.length === 0) {
+      alert('Bạn chưa có thư mục môn học nào. Hãy tạo một môn học trước nhé!');
+      this.openFolderModal();
+      return;
+    }
+
+    if (docId) {
+      modalTitle.textContent = "Chỉnh Sửa Tài Liệu";
+      const doc = StorageManager.getDocuments().find(d => d.id === docId);
+      if (doc) {
+        this.populateFolderSelect(doc.folderId);
+        document.getElementById('input-doc-title').value = doc.title || '';
+        document.getElementById('input-doc-format').value = doc.format || 'summary';
+        document.getElementById('input-doc-semester').value = doc.semester || '';
+        document.getElementById('input-doc-author').value = doc.author || '';
+        document.getElementById('input-doc-url').value = doc.url || '';
+        document.getElementById('input-doc-tags').value = (doc.tags || []).join(', ');
+        document.getElementById('input-doc-summary').value = doc.summary || '';
+        document.getElementById('input-doc-exam-tips').value = doc.examTips || '';
+      }
+    } else {
+      modalTitle.textContent = "Thêm Tài Liệu Mới";
+      this.populateFolderSelect(preselectFolderId || (folders[0] ? folders[0].id : null));
+    }
+
+    this.openModal('modal-add-doc');
+  }
+
+  handleSaveDocument() {
+    const title = document.getElementById('input-doc-title').value.trim();
+    if (!title) return;
+
+    const folderSelect = document.getElementById('input-doc-folder');
+    const formatSelect = document.getElementById('input-doc-format');
+
+    const folderId = folderSelect.value;
+    const folderName = folderSelect.options[folderSelect.selectedIndex]?.text || 'Môn học';
+
+    const format = formatSelect.value;
+    const formatName = formatSelect.options[formatSelect.selectedIndex].text;
+
+    const semester = document.getElementById('input-doc-semester').value.trim() || 'Học kỳ này';
+    const author = document.getElementById('input-doc-author').value.trim() || 'Rita Hub';
+    const url = document.getElementById('input-doc-url').value.trim() || '#';
+    const tagsRaw = document.getElementById('input-doc-tags').value.trim();
+    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
+    const summary = document.getElementById('input-doc-summary').value.trim();
+    const examTips = document.getElementById('input-doc-exam-tips').value.trim();
+
+    if (this.editingDocId) {
+      StorageManager.updateDocument(this.editingDocId, {
+        title,
+        folderId,
+        folderName,
+        format,
+        formatName,
+        semester,
+        author,
+        url,
+        tags,
+        summary,
+        examTips
+      });
+      this.showToast('Đã cập nhật tài liệu thành công! 📝');
+    } else {
+      StorageManager.addDocument({
+        title,
+        folderId,
+        folderName,
+        format,
+        formatName,
+        semester,
+        author,
+        url,
+        tags,
+        summary,
+        examTips
+      });
+      this.showToast('Đã lưu tài liệu mới vào môn học! 🌸');
+    }
+
+    this.closeAllModals();
+    this.renderFolders();
+    this.renderDocuments();
+  }
+
+  // ==========================================
+  // Document Preview Modal with In-Place Note-Taking
+  // ==========================================
+  openPreviewModal(docId) {
+    const doc = StorageManager.getDocuments().find(d => d.id === docId);
+    if (!doc) return;
+
+    const body = document.getElementById('preview-modal-body');
+    const folders = StorageManager.getFolders();
+    const folder = folders.find(f => f.id === doc.folderId) || { name: doc.folderName || 'Môn học', icon: '📁' };
+    const tagsHtml = (doc.tags || []).map(t => `<span class="badge badge-yellow">#${t}</span>`).join(' ');
+
+    body.innerHTML = `
+      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
+        <div>
+          <span class="badge badge-brown">${folder.icon} ${folder.name}</span>
+          <span class="badge badge-yellow">${doc.formatName || doc.format}</span>
+        </div>
+        <div style="font-size:0.85rem; color:var(--text-muted);">
+          ${doc.dateAdded ? 'Thêm ngày ' + doc.dateAdded : ''}
+        </div>
+      </div>
+
+      <h2 style="font-family:var(--font-serif); font-size:1.45rem; color:var(--brown-900); margin:0.6rem 0;">
+        ${doc.title}
+      </h2>
+
+      <div style="font-size:0.88rem; color:var(--text-secondary); display:flex; gap:1.2rem; flex-wrap:wrap;">
+        <span><strong>Tác giả / Giảng viên:</strong> ${doc.author || 'Chưa cập nhật'}</span>
+        <span><strong>Học kỳ:</strong> ${doc.semester || 'Học kỳ này'}</span>
+      </div>
+
+      <!-- Tóm tắt tài liệu Section -->
+      <div style="margin-top:0.8rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.35rem;">
+          <h4 style="font-size:0.95rem; color:var(--brown-800);">📖 Tóm tắt nội dung chính:</h4>
+          <button class="btn-copy-sm" id="btn-copy-summary" title="Sao chép tóm tắt">
+            📋 Sao chép tóm tắt
+          </button>
+        </div>
+        <div class="doc-summary-text" id="preview-summary-content" style="white-space:pre-line;">
+          ${doc.summary ? doc.summary : '<span style="color:var(--text-muted); font-style:italic;">Chưa có tóm tắt. Nhấn nút "Sửa nhanh ghi chú" bên dưới để thêm tóm tắt cho tài liệu này.</span>'}
+        </div>
+      </div>
+
+      <!-- Ghi chú học tập / Mẹo ôn thi Section -->
+      <div style="margin-top:0.8rem;">
+        <h4 style="font-size:0.95rem; margin-bottom:0.35rem; color:var(--yellow-900);">💡 Ghi chú ôn thi & Cạm bẫy cần nhớ:</h4>
+        <div class="doc-notes-block" id="preview-notes-content" style="white-space:pre-line;">
+          ${doc.examTips ? doc.examTips : '<span style="color:var(--text-muted); font-style:italic;">Chưa có ghi chú ôn thi.</span>'}
+        </div>
+      </div>
+
+      <!-- Quick Inline Notes Editor (Hidden by default, toggleable) -->
+      <div id="inline-notes-editor" style="display:none; background:var(--bg-secondary); border:1.5px dashed var(--yellow-500); padding:1rem; border-radius:var(--radius-md); margin-top:0.8rem;">
+        <h4 style="font-size:0.9rem; margin-bottom:0.5rem; color:var(--brown-900);">✏️ Chỉnh sửa nhanh Tóm tắt & Ghi chú:</h4>
+        <div style="display:flex; flex-direction:column; gap:0.6rem;">
+          <div>
+            <label style="font-size:0.8rem; font-weight:600;">Tóm tắt tài liệu:</label>
+            <textarea id="inline-summary-input" class="form-control" rows="3" style="width:100%; resize:vertical;">${doc.summary || ''}</textarea>
+          </div>
+          <div>
+            <label style="font-size:0.8rem; font-weight:600;">Ghi chú ôn thi & cạm bẫy:</label>
+            <textarea id="inline-notes-input" class="form-control" rows="2" style="width:100%; resize:vertical;">${doc.examTips || ''}</textarea>
+          </div>
+          <div style="display:flex; justify-content:flex-end; gap:0.5rem; margin-top:0.3rem;">
+            <button class="btn-outline" id="btn-cancel-inline" style="font-size:0.8rem; padding:0.35rem 0.8rem;">Hủy</button>
+            <button class="btn-primary" id="btn-save-inline" style="font-size:0.8rem; padding:0.35rem 0.8rem;">💾 Lưu ghi chú</button>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:0.8rem;">
+        <h4 style="font-size:0.9rem; margin-bottom:0.35rem; color:var(--brown-800);">🏷️ Từ khóa:</h4>
+        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
+          ${tagsHtml || '<span style="color:var(--text-muted); font-size:0.85rem;">Không có thẻ</span>'}
+        </div>
+      </div>
+
+      <div style="display:flex; gap:0.75rem; justify-content:space-between; align-items:center; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-subtle); flex-wrap:wrap;">
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn-outline" id="btn-toggle-inline-edit" style="font-size:0.85rem;">
+            ✏️ Viết thêm ghi chú / Tóm tắt
+          </button>
+          <button class="btn-outline btn-edit-current-doc" data-id="${doc.id}" style="font-size:0.85rem;">
+            ⚙️ Sửa toàn bộ
+          </button>
+        </div>
+        
+        <div style="display:flex; gap:0.5rem;">
+          <button class="btn-outline" style="color:#C0392B; border-color:rgba(192,57,43,0.3); font-size:0.85rem;" id="btn-delete-current-doc" data-id="${doc.id}">
+            🗑️ Xóa
+          </button>
+          ${doc.url && doc.url !== '#' ? `
+            <a href="${doc.url}" target="_blank" class="btn-primary" style="text-decoration:none; font-size:0.85rem;">
+              🚀 Mở tệp / Liên kết
+            </a>
+          ` : ''}
+        </div>
+      </div>
+    `;
+
+    // Copy Summary button
+    const copyBtn = body.querySelector('#btn-copy-summary');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', () => {
+        if (!doc.summary) {
+          this.showToast('Tài liệu chưa có tóm tắt để sao chép');
+          return;
+        }
+        navigator.clipboard.writeText(doc.summary).then(() => {
+          this.showToast('Đã sao chép tóm tắt vào clipboard! 📋✨');
+        }).catch(() => {
+          this.showToast('Không thể tự động sao chép');
+        });
+      });
+    }
+
+    // Toggle inline editor
+    const inlineEditor = body.querySelector('#inline-notes-editor');
+    const toggleInlineBtn = body.querySelector('#btn-toggle-inline-edit');
+    const cancelInlineBtn = body.querySelector('#btn-cancel-inline');
+    const saveInlineBtn = body.querySelector('#btn-save-inline');
+
+    if (toggleInlineBtn && inlineEditor) {
+      toggleInlineBtn.addEventListener('click', () => {
+        const isShown = inlineEditor.style.display !== 'none';
+        inlineEditor.style.display = isShown ? 'none' : 'block';
+        if (!isShown) {
+          inlineEditor.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       });
+    }
+
+    if (cancelInlineBtn) {
+      cancelInlineBtn.addEventListener('click', () => {
+        inlineEditor.style.display = 'none';
+      });
+    }
+
+    if (saveInlineBtn) {
+      saveInlineBtn.addEventListener('click', () => {
+        const newSummary = body.querySelector('#inline-summary-input').value.trim();
+        const newTips = body.querySelector('#inline-notes-input').value.trim();
+
+        StorageManager.updateSummaryAndNotes(doc.id, newSummary, newTips);
+        doc.summary = newSummary;
+        doc.examTips = newTips;
+
+        body.querySelector('#preview-summary-content').textContent = newSummary || 'Chưa có tóm tắt.';
+        body.querySelector('#preview-notes-content').textContent = newTips || 'Chưa có ghi chú ôn thi.';
+        inlineEditor.style.display = 'none';
+
+        this.renderDocuments();
+        this.showToast('Đã lưu ghi chú & tóm tắt thành công! 🌸');
+      });
+    }
+
+    body.querySelector('.btn-edit-current-doc').addEventListener('click', () => {
+      this.closeAllModals();
+      this.openAddDocumentModal(doc.id);
     });
 
-    this.updateStats();
+    body.querySelector('#btn-delete-current-doc').addEventListener('click', () => {
+      if (confirm(`Bạn có chắc muốn xóa tài liệu "${doc.title}" khỏi môn học?`)) {
+        StorageManager.deleteDocument(doc.id);
+        this.closeAllModals();
+        this.renderFolders();
+        this.renderDocuments();
+        this.showToast('Đã xóa tài liệu khỏi danh sách');
+      }
+    });
+
+    this.openModal('modal-preview-doc');
   }
 
   // ==========================================
@@ -412,7 +888,6 @@ class App {
       localStorage.setItem('rita_pomo_count', this.pomoCompletedCount);
       this.updateStats();
       this.showToast('🎉 Hoàn thành phiên học 25 phút! Tuyệt vời lắm Rita!');
-      // Suggest break
       this.pomoMode = 'shortBreak';
       document.querySelectorAll('.pomo-mode-btn').forEach(b => {
         b.classList.toggle('active', b.getAttribute('data-mode') === 'shortBreak');
@@ -436,7 +911,6 @@ class App {
     const digitsEl = document.getElementById('timer-digits');
     if (digitsEl) digitsEl.textContent = timeStr;
 
-    // SVG Circular dial: Circumference = 2 * PI * r = 2 * 3.14159 * 110 = ~691
     const totalDuration = this.pomoDurations[this.pomoMode];
     const progress = (totalDuration - this.pomoTimeRemaining) / totalDuration;
     const offset = 691 - (progress * 691);
@@ -446,7 +920,6 @@ class App {
       circle.style.strokeDashoffset = offset;
     }
 
-    // Document title update
     if (this.pomoIsRunning) {
       document.title = `(${timeStr}) Rita's Lounge · ${this.pomoMode === 'focus' ? 'Đang học tập' : 'Giải lao'}`;
     } else {
@@ -745,7 +1218,7 @@ class App {
   }
 
   // ==========================================
-  // Modals & Forms
+  // Modals & General Forms
   // ==========================================
   initModals() {
     // Close modal triggers
@@ -801,6 +1274,7 @@ class App {
           const res = StorageManager.importBackup(event.target.result);
           if (res.success) {
             this.showToast('Khôi phục dữ liệu thành công! 🌸');
+            this.renderFolders();
             this.renderDocuments();
             this.renderChecklist();
             this.renderStickyNotes();
@@ -834,176 +1308,7 @@ class App {
       bd.classList.remove('open');
     });
     this.editingDocId = null;
-  }
-
-  openAddDocumentModal(docId = null) {
-    this.editingDocId = docId;
-    const modalTitle = document.getElementById('modal-doc-title');
-    const form = document.getElementById('doc-form');
-    form.reset();
-
-    if (docId) {
-      modalTitle.textContent = "Chỉnh Sửa Tài Liệu";
-      const doc = StorageManager.getDocuments().find(d => d.id === docId);
-      if (doc) {
-        document.getElementById('input-doc-title').value = doc.title || '';
-        document.getElementById('input-doc-subject').value = doc.subject || 'audit-standards';
-        document.getElementById('input-doc-format').value = doc.format || 'summary';
-        document.getElementById('input-doc-semester').value = doc.semester || '';
-        document.getElementById('input-doc-author').value = doc.author || '';
-        document.getElementById('input-doc-url').value = doc.url || '';
-        document.getElementById('input-doc-tags').value = (doc.tags || []).join(', ');
-        document.getElementById('input-doc-summary').value = doc.summary || '';
-        document.getElementById('input-doc-exam-tips').value = doc.examTips || '';
-      }
-    } else {
-      modalTitle.textContent = "Thêm Tài Liệu Mới";
-    }
-
-    this.openModal('modal-add-doc');
-  }
-
-  handleSaveDocument() {
-    const title = document.getElementById('input-doc-title').value.trim();
-    if (!title) return;
-
-    const subjectSelect = document.getElementById('input-doc-subject');
-    const formatSelect = document.getElementById('input-doc-format');
-
-    const subject = subjectSelect.value;
-    const subjectName = subjectSelect.options[subjectSelect.selectedIndex].text;
-
-    const format = formatSelect.value;
-    const formatName = formatSelect.options[formatSelect.selectedIndex].text;
-
-    const semester = document.getElementById('input-doc-semester').value.trim() || 'Học kỳ này';
-    const author = document.getElementById('input-doc-author').value.trim() || 'Rita Hub';
-    const url = document.getElementById('input-doc-url').value.trim() || '#';
-    const tagsRaw = document.getElementById('input-doc-tags').value.trim();
-    const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()).filter(Boolean) : [];
-    const summary = document.getElementById('input-doc-summary').value.trim();
-    const examTips = document.getElementById('input-doc-exam-tips').value.trim();
-
-    if (this.editingDocId) {
-      StorageManager.updateDocument(this.editingDocId, {
-        title,
-        subject,
-        subjectName,
-        format,
-        formatName,
-        semester,
-        author,
-        url,
-        tags,
-        summary,
-        examTips
-      });
-      this.showToast('Đã cập nhật tài liệu thành công! 📝');
-    } else {
-      StorageManager.addDocument({
-        title,
-        subject,
-        subjectName,
-        format,
-        formatName,
-        semester,
-        author,
-        url,
-        fileSize: 'Mới thêm',
-        favorite: false,
-        rating: 5,
-        tags,
-        summary,
-        examTips
-      });
-      this.showToast('Đã lưu tài liệu mới vào kho học tập! 🌸');
-    }
-
-    this.closeAllModals();
-    this.renderDocuments();
-  }
-
-  openPreviewModal(docId) {
-    const doc = StorageManager.getDocuments().find(d => d.id === docId);
-    if (!doc) return;
-
-    const body = document.getElementById('preview-modal-body');
-    const tagsHtml = (doc.tags || []).map(t => `<span class="badge badge-yellow">#${t}</span>`).join(' ');
-
-    body.innerHTML = `
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:1rem;">
-        <div>
-          <span class="badge badge-brown">${doc.subjectName || doc.subject}</span>
-          <span class="badge badge-yellow">${doc.formatName || doc.format}</span>
-        </div>
-        <div style="font-size:0.85rem; color:var(--text-muted);">
-          ${doc.dateAdded ? 'Thêm ngày ' + doc.dateAdded : ''}
-        </div>
-      </div>
-
-      <h2 style="font-family:var(--font-serif); font-size:1.45rem; color:var(--brown-900); margin:0.5rem 0;">
-        ${doc.title}
-      </h2>
-
-      <div style="font-size:0.88rem; color:var(--text-secondary); display:flex; gap:1rem; flex-wrap:wrap;">
-        <span><strong>Tác giả:</strong> ${doc.author || 'Chưa cập nhật'}</span>
-        <span><strong>Kỳ học:</strong> ${doc.semester || 'Học kỳ này'}</span>
-        <span><strong>Dung lượng:</strong> ${doc.fileSize || 'N/A'}</span>
-      </div>
-
-      <div style="margin-top:0.5rem;">
-        <h4 style="font-size:0.95rem; margin-bottom:0.35rem; color:var(--brown-800);">📖 Tóm tắt nội dung:</h4>
-        <p style="font-size:0.9rem; line-height:1.6; color:var(--text-primary); background:var(--bg-secondary); padding:1rem; border-radius:var(--radius-md);">
-          ${doc.summary || 'Chưa có tóm tắt.'}
-        </p>
-      </div>
-
-      ${doc.examTips ? `
-        <div>
-          <h4 style="font-size:0.95rem; margin-bottom:0.35rem; color:var(--yellow-900);">💡 Trọng tâm ôn thi & Cạm bẫy:</h4>
-          <div class="doc-exam-tip" style="font-size:0.88rem;">
-            ${doc.examTips}
-          </div>
-        </div>
-      ` : ''}
-
-      <div>
-        <h4 style="font-size:0.95rem; margin-bottom:0.4rem; color:var(--brown-800);">🏷️ Từ khóa & Chuẩn mực liên quan:</h4>
-        <div style="display:flex; flex-wrap:wrap; gap:0.4rem;">
-          ${tagsHtml || '<span style="color:var(--text-muted); font-size:0.85rem;">Không có thẻ</span>'}
-        </div>
-      </div>
-
-      <div style="display:flex; gap:0.75rem; justify-content:flex-end; margin-top:1.5rem; padding-top:1rem; border-top:1px solid var(--border-subtle);">
-        <button class="btn-outline btn-edit-current-doc" data-id="${doc.id}">
-          ✏️ Chỉnh sửa
-        </button>
-        <button class="btn-outline" style="color:#C0392B; border-color:rgba(192,57,43,0.3);" id="btn-delete-current-doc" data-id="${doc.id}">
-          🗑️ Xóa
-        </button>
-        ${doc.url && doc.url !== '#' ? `
-          <a href="${doc.url}" target="_blank" class="btn-primary" style="text-decoration:none;">
-            🚀 Mở tài liệu
-          </a>
-        ` : ''}
-      </div>
-    `;
-
-    body.querySelector('.btn-edit-current-doc').addEventListener('click', () => {
-      this.closeAllModals();
-      this.openAddDocumentModal(doc.id);
-    });
-
-    body.querySelector('#btn-delete-current-doc').addEventListener('click', () => {
-      if (confirm(`Bạn có chắc muốn xóa tài liệu "${doc.title}" khỏi góc học tập?`)) {
-        StorageManager.deleteDocument(doc.id);
-        this.closeAllModals();
-        this.renderDocuments();
-        this.showToast('Đã xóa tài liệu khỏi danh sách');
-      }
-    });
-
-    this.openModal('modal-preview-doc');
+    this.editingFolderId = null;
   }
 
   openAddNoteModal() {

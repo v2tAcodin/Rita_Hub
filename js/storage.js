@@ -1,8 +1,9 @@
-// LocalStorage Manager with Export/Import support for Rita Hub
-import { INITIAL_DOCUMENTS, INITIAL_STICKY_NOTES, AUDIT_CHECKLIST_PHASES, EXAM_COUNTDOWNS } from './data.js';
+// LocalStorage Manager with Dynamic Folder/Subject Management & Export/Import for Rita Hub
+import { INITIAL_DOCUMENTS, INITIAL_FOLDERS, INITIAL_STICKY_NOTES, AUDIT_CHECKLIST_PHASES, EXAM_COUNTDOWNS } from './data.js';
 
 const STORAGE_KEYS = {
-  DOCS: 'rita_hub_documents',
+  FOLDERS: 'rita_hub_folders_v2',
+  DOCS: 'rita_hub_documents_v2',
   NOTES: 'rita_hub_sticky_notes',
   CHECKLIST: 'rita_hub_audit_checklist',
   COUNTDOWNS: 'rita_hub_exam_countdowns',
@@ -10,6 +11,68 @@ const STORAGE_KEYS = {
 };
 
 export class StorageManager {
+  // ==========================================
+  // Folders / Subjects Management
+  // ==========================================
+  static getFolders() {
+    const raw = localStorage.getItem(STORAGE_KEYS.FOLDERS);
+    if (!raw) {
+      localStorage.setItem(STORAGE_KEYS.FOLDERS, JSON.stringify(INITIAL_FOLDERS));
+      return INITIAL_FOLDERS;
+    }
+    try {
+      return JSON.parse(raw);
+    } catch (e) {
+      console.error("Error parsing stored folders, resetting to defaults", e);
+      return INITIAL_FOLDERS;
+    }
+  }
+
+  static saveFolders(folders) {
+    localStorage.setItem(STORAGE_KEYS.FOLDERS, JSON.stringify(folders));
+  }
+
+  static addFolder({ name, icon = '📁', color = 'yellow', description = '' }) {
+    const folders = this.getFolders();
+    const newFolder = {
+      id: 'folder-' + Date.now(),
+      name: name.trim(),
+      icon: icon || '📁',
+      color: color || 'yellow',
+      description: description.trim()
+    };
+    folders.push(newFolder);
+    this.saveFolders(folders);
+    return newFolder;
+  }
+
+  static updateFolder(id, updatedFields) {
+    const folders = this.getFolders();
+    const index = folders.findIndex(f => f.id === id);
+    if (index !== -1) {
+      folders[index] = { ...folders[index], ...updatedFields };
+      this.saveFolders(folders);
+      return folders[index];
+    }
+    return null;
+  }
+
+  static deleteFolder(id) {
+    let folders = this.getFolders();
+    folders = folders.filter(f => f.id !== id);
+    this.saveFolders(folders);
+
+    // Also remove documents inside this deleted folder
+    let docs = this.getDocuments();
+    docs = docs.filter(d => d.folderId !== id);
+    this.saveDocuments(docs);
+
+    return folders;
+  }
+
+  // ==========================================
+  // Documents Management (Initialized Empty)
+  // ==========================================
   static getDocuments() {
     const raw = localStorage.getItem(STORAGE_KEYS.DOCS);
     if (!raw) {
@@ -19,8 +82,8 @@ export class StorageManager {
     try {
       return JSON.parse(raw);
     } catch (e) {
-      console.error("Error parsing stored documents, falling back to defaults", e);
-      return INITIAL_DOCUMENTS;
+      console.error("Error parsing stored documents", e);
+      return [];
     }
   }
 
@@ -33,7 +96,9 @@ export class StorageManager {
     const docWithId = {
       ...newDoc,
       id: 'doc-' + Date.now(),
-      dateAdded: new Date().toISOString().split('T')[0]
+      dateAdded: new Date().toISOString().split('T')[0],
+      favorite: false,
+      rating: 5
     };
     docs.unshift(docWithId);
     this.saveDocuments(docs);
@@ -69,7 +134,22 @@ export class StorageManager {
     return false;
   }
 
-  // --- Sticky Notes ---
+  // Quick update only summary and notes
+  static updateSummaryAndNotes(id, summary, examTips) {
+    const docs = this.getDocuments();
+    const doc = docs.find(d => d.id === id);
+    if (doc) {
+      doc.summary = summary;
+      doc.examTips = examTips;
+      this.saveDocuments(docs);
+      return true;
+    }
+    return false;
+  }
+
+  // ==========================================
+  // Sticky Notes
+  // ==========================================
   static getStickyNotes() {
     const raw = localStorage.getItem(STORAGE_KEYS.NOTES);
     if (!raw) {
@@ -106,7 +186,9 @@ export class StorageManager {
     return notes;
   }
 
-  // --- Checklist ---
+  // ==========================================
+  // Checklist
+  // ==========================================
   static getChecklist() {
     const raw = localStorage.getItem(STORAGE_KEYS.CHECKLIST);
     if (!raw) {
@@ -137,7 +219,9 @@ export class StorageManager {
     return false;
   }
 
-  // --- Countdowns ---
+  // ==========================================
+  // Countdowns
+  // ==========================================
   static getCountdowns() {
     const raw = localStorage.getItem(STORAGE_KEYS.COUNTDOWNS);
     if (!raw) {
@@ -155,12 +239,15 @@ export class StorageManager {
     localStorage.setItem(STORAGE_KEYS.COUNTDOWNS, JSON.stringify(countdowns));
   }
 
-  // --- Export and Import JSON ---
+  // ==========================================
+  // Export and Import JSON
+  // ==========================================
   static exportFullBackup() {
     const backupData = {
-      version: "1.0",
+      version: "2.0",
       exportDate: new Date().toISOString(),
       user: "Rita",
+      folders: this.getFolders(),
       documents: this.getDocuments(),
       notes: this.getStickyNotes(),
       checklist: this.getChecklist(),
@@ -179,6 +266,9 @@ export class StorageManager {
   static importBackup(jsonString) {
     try {
       const data = JSON.parse(jsonString);
+      if (data.folders && Array.isArray(data.folders)) {
+        this.saveFolders(data.folders);
+      }
       if (data.documents && Array.isArray(data.documents)) {
         this.saveDocuments(data.documents);
       }

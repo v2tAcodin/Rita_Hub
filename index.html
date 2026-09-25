@@ -149,28 +149,48 @@
          TAB 1: KHO TÀI LIỆU HỌC TẬP (DOCUMENT HUB)
          ==================================================================== -->
     <section class="tab-pane active" id="tab-docs" role="tabpanel" aria-labelledby="tab-btn-docs">
-      <div class="doc-hub-header">
-        
-        <!-- Category Filter Carousel / Scroll -->
-        <div class="category-scroll-container">
-          <div class="category-pills">
-            <button class="category-pill active" data-category="all">🌟 Tất cả môn học</button>
-            <button class="category-pill" data-category="audit-standards">📜 Chuẩn mực VSA / ISA</button>
-            <button class="category-pill" data-category="financial-audit">🔍 Kiểm toán BCTC</button>
-            <button class="category-pill" data-category="working-papers">📂 Giấy làm việc (W/P)</button>
-            <button class="category-pill" data-category="audit-basics">📚 Kiểm toán căn bản</button>
-            <button class="category-pill" data-category="accounting-ifrs">📑 Kế toán tài chính & IFRS</button>
-            <button class="category-pill" data-category="tax-law">⚖️ Thuế & Luật kinh tế</button>
-            <button class="category-pill" data-category="acca-cpa">🎓 ACCA / CPA Ôn thi</button>
-            <button class="category-pill" data-category="internal-control">🛡️ KSNB & Rủi ro</button>
+      
+      <!-- Dynamic Folder / Subject Management Section -->
+      <div class="folders-container" id="folders-container">
+        <div class="folders-header">
+          <div class="folders-title">
+            <span>📂</span> Thư Mục Môn Học Của Rita
+          </div>
+          <button class="btn-primary" id="btn-create-folder" style="font-size: 0.85rem; padding: 0.45rem 1rem;">
+            <span>+</span> Tạo Môn Học Mới
+          </button>
+        </div>
+        <div class="folder-grid" id="folder-grid">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </div>
+
+      <!-- Active Folder Banner (shown when a specific folder is selected) -->
+      <div class="active-folder-banner" id="active-folder-banner" style="display: none;">
+        <div class="active-folder-info">
+          <span class="active-folder-icon" id="banner-folder-icon">📂</span>
+          <div>
+            <div class="active-folder-title" id="banner-folder-title">Tên Môn Học</div>
+            <div class="active-folder-desc" id="banner-folder-desc">Mô tả môn học</div>
           </div>
         </div>
+        <div style="display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap;">
+          <button class="btn-outline" id="btn-back-all-folders" style="font-size: 0.85rem;">
+            ⬅️ Xem tất cả môn
+          </button>
+          <button class="btn-primary" id="btn-add-doc-to-folder" style="font-size: 0.85rem;">
+            ✨ + Thêm tài liệu vào môn này
+          </button>
+        </div>
+      </div>
 
+      <div class="doc-hub-header">
+        
         <!-- Filter & Search Toolbar -->
         <div class="filter-toolbar">
           <div class="search-input-wrapper">
             <span class="search-icon">🔍</span>
-            <input type="text" id="doc-search-input" class="search-input" placeholder="Tìm kiếm theo tiêu đề, chuẩn mực, từ khóa (#VSA315, Trọng yếu...)...">
+            <input type="text" id="doc-search-input" class="search-input" placeholder="Tìm kiếm tài liệu, tóm tắt, chuẩn mực (#VSA320, Trọng yếu...)...">
           </div>
 
           <div class="toolbar-controls">
@@ -544,18 +564,84 @@
             <input type="text" id="input-doc-title" class="form-control" style="width:100%;" required placeholder="Ví dụ: Slide Bài Giảng Kiểm Toán BCTC Chương 4 - Hàng Tồn Kho">
           </div>
 
+  <!-- Modal 0: Add / Edit Folder (Môn học) -->
+  <div class="modal-backdrop" id="modal-folder" role="dialog" aria-modal="true" aria-labelledby="modal-folder-title">
+    <div class="modal-window" style="max-width: 480px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-folder-title">Tạo Môn Học Mới</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <form id="folder-form">
+        <div class="modal-body">
+          <div>
+            <label class="input-label" for="input-folder-name">Tên môn học / Thư mục *</label>
+            <input type="text" id="input-folder-name" class="form-control" style="width:100%;" required placeholder="VD: Kiểm toán tài chính 1, Thuế, ACCA F8...">
+          </div>
+
           <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
             <div>
-              <label class="input-label" for="input-doc-subject">Chuyên ngành / Môn học</label>
-              <select id="input-doc-subject" class="form-control" style="width:100%;">
-                <option value="audit-standards">Chuẩn mực VSA / ISA</option>
-                <option value="financial-audit">Kiểm toán BCTC</option>
-                <option value="working-papers">Giấy làm việc (W/P)</option>
-                <option value="audit-basics">Kiểm toán căn bản</option>
-                <option value="accounting-ifrs">Kế toán tài chính & IFRS</option>
-                <option value="tax-law">Thuế & Luật kinh tế</option>
-                <option value="acca-cpa">ACCA / CPA Ôn thi</option>
-                <option value="internal-control">KSNB & Rủi ro</option>
+              <label class="input-label" for="input-folder-icon">Biểu tượng (Icon)</label>
+              <select id="input-folder-icon" class="form-control" style="width:100%;">
+                <option value="📂">📂 Thư mục chung</option>
+                <option value="📜">📜 Chuẩn mực VSA</option>
+                <option value="🔍">🔍 Kiểm toán BCTC</option>
+                <option value="⚖️">⚖️ Thuế & Luật</option>
+                <option value="📊">📊 Phân tích BCTC</option>
+                <option value="🎓">🎓 Chứng chỉ CPA/ACCA</option>
+                <option value="📚">📚 Giáo trình & Sách</option>
+                <option value="💼">💼 Thực tập & Big4</option>
+                <option value="🌸">🌸 Dịu dàng & Nữ tính</option>
+                <option value="☕">☕ Cà phê học tập</option>
+                <option value="📝">📝 Ghi chú & Đề thi</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="input-label" for="input-folder-color">Tông màu thư mục</label>
+              <select id="input-folder-color" class="form-control" style="width:100%;">
+                <option value="yellow">Vàng mật ong (Honey)</option>
+                <option value="brown">Nâu Mocha ấm</option>
+                <option value="peach">Đào ấm dịu dàng</option>
+                <option value="cream">Trà sữa ngà</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="input-label" for="input-folder-desc">Mô tả môn học / Nội dung chính</label>
+            <textarea id="input-folder-desc" class="form-control" rows="3" style="width:100%; resize:vertical;" placeholder="VD: Chuyên đề kiểm toán tài sản cố định, chu trình doanh thu và chuẩn mực VSA..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline modal-close-trigger">Hủy</button>
+          <button type="submit" class="btn-primary">Lưu Môn Học 📁</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 1: Add / Edit Document -->
+  <div class="modal-backdrop" id="modal-add-doc" role="dialog" aria-modal="true" aria-labelledby="modal-doc-title">
+    <div class="modal-window">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-doc-title">Thêm Tài Liệu Mới</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <form id="doc-form">
+        <div class="modal-body">
+          <div>
+            <label class="input-label" for="input-doc-title">Tên tài liệu / Giáo trình *</label>
+            <input type="text" id="input-doc-title" class="form-control" style="width:100%;" required placeholder="Ví dụ: Slide Bài Giảng Kiểm Toán BCTC Chương 4 - Hàng Tồn Kho">
+          </div>
+
+          <div style="display:grid; grid-template-columns:1.2fr 0.8fr; gap:1rem;">
+            <div>
+              <label class="input-label" for="input-doc-folder">Môn học / Thư mục lưu trữ *</label>
+              <select id="input-doc-folder" class="form-control" style="width:100%;" required>
+                <!-- Populated dynamically from user's folders -->
               </select>
             </div>
 
@@ -578,7 +664,7 @@
             </div>
 
             <div>
-              <label class="input-label" for="input-doc-author">Giảng viên / Nguồn</label>
+              <label class="input-label" for="input-doc-author">Giảng viên / Tác giả</label>
               <input type="text" id="input-doc-author" class="form-control" style="width:100%;" placeholder="VD: Thầy Tuấn / Big4 Alumni">
             </div>
           </div>
@@ -594,13 +680,13 @@
           </div>
 
           <div>
-            <label class="input-label" for="input-doc-summary">Tóm tắt nội dung chính</label>
-            <textarea id="input-doc-summary" class="form-control" rows="3" style="width:100%; resize:vertical;" placeholder="Nội dung chính gồm những phần hành nào, kiến thức trọng tâm..."></textarea>
+            <label class="input-label" for="input-doc-summary">📖 Tóm tắt tài liệu (Summary)</label>
+            <textarea id="input-doc-summary" class="form-control" rows="3" style="width:100%; resize:vertical;" placeholder="Tóm tắt ngắn gọn các nội dung chính, các điểm cốt lõi của tài liệu này..."></textarea>
           </div>
 
           <div>
-            <label class="input-label" for="input-doc-exam-tips">💡 Ghi chú ôn thi & Cạm bẫy cần tránh</label>
-            <textarea id="input-doc-exam-tips" class="form-control" rows="2" style="width:100%; resize:vertical;" placeholder="Thầy cô hay hỏi phần nào, bẫy trắc nghiệm ở đâu..."></textarea>
+            <label class="input-label" for="input-doc-exam-tips">💡 Ghi chú ôn thi & Cạm bẫy cần tránh (Study Notes)</label>
+            <textarea id="input-doc-exam-tips" class="form-control" rows="2" style="width:100%; resize:vertical;" placeholder="Lưu ý của giảng viên khi đi thi, công thức cần nhớ, bẫy trắc nghiệm..."></textarea>
           </div>
         </div>
 
