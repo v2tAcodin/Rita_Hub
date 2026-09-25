@@ -2,7 +2,7 @@
 // Visualizes authentic university auditing study patterns, Pomodoros, and VSA quizzes
 
 export class StudyHeatmap {
-  static STORAGE_KEY = 'rita_hub_study_heatmap_v4';
+  static STORAGE_KEY = 'rita_hub_study_heatmap_v6_zero';
 
   static formatLocalDate(d) {
     const year = d.getFullYear();
@@ -12,6 +12,11 @@ export class StudyHeatmap {
   }
 
   static getHeatmapData() {
+    // Purge legacy versions to ensure complete reset to 0
+    ['rita_hub_study_heatmap_v1', 'rita_hub_study_heatmap_v2', 'rita_hub_study_heatmap_v3', 'rita_hub_study_heatmap_v4', 'rita_hub_study_heatmap_v5'].forEach(k => {
+      localStorage.removeItem(k);
+    });
+
     const raw = localStorage.getItem(this.STORAGE_KEY);
     if (raw) {
       try {
@@ -29,122 +34,25 @@ export class StudyHeatmap {
     localStorage.setItem(this.STORAGE_KEY, JSON.stringify(data));
   }
 
+  static resetToZero() {
+    // Reset all heatmap storage keys to 0
+    Object.keys(localStorage).forEach(k => {
+      if (k.includes('study_heatmap')) {
+        localStorage.removeItem(k);
+      }
+    });
+    const emptyData = {};
+    this.saveHeatmapData(emptyData);
+    return emptyData;
+  }
+
   static resetToRealisticHistory() {
-    const freshData = this.generateInitialHistory();
-    this.saveHeatmapData(freshData);
-    return freshData;
+    return this.resetToZero();
   }
 
   static generateInitialHistory() {
-    const data = {};
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const studyTopics = [
-      "VSA 320: Xác định Mức trọng yếu tổng thể OM & PM",
-      "Bài tập lớn Báo cáo tài chính & Mẫu Working Papers Excel",
-      "Giải 20 câu trắc nghiệm chu trình Bán hàng - Thu tiền",
-      "Đọc chuẩn mực VSA 500 & VSA 505 về Thư xác nhận bên ngoài",
-      "Ghi chú cạm bẫy Thuế TNDN: Các khoản chi phí không được trừ",
-      "Luyện đề thi thử Kiểm toán căn bản & Các cơ sở dẫn liệu",
-      "Học nhóm tại quán cà phê: Thảo luận rủi ro gian lận VSA 240",
-      "Ôn tập giữa kỳ: Phân tích tỷ số tài chính & Thủ tục Cut-off",
-      "Đọc giáo trình Kiểm toán hoạt động & Hệ thống kiểm soát nội bộ COSO",
-      "Thực hành kiểm toán khoản mục Hàng tồn kho theo VSA 501",
-      "Kiểm tra tính tuân thủ pháp luật thuế & Hóa đơn điện tử",
-      "Phân tích ma trận ý kiến kiểm toán theo VSA 705"
-    ];
-
-    // Generate past 140 days (~20 weeks from early May to late September)
-    for (let i = 140; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateStr = this.formatLocalDate(d);
-      const dayOfWeek = d.getDay(); // 0: Sunday, 6: Saturday
-
-      let count = 0;
-      let topic = "";
-
-      // 1. RECENT STREAK (Last 14 days up to today): Continuous uninterrupted study
-      if (i < 14 && i > 0) {
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-          count = 4 + (i % 3); // 4 - 6 sessions on weekends
-          topic = "Cuối tuần tập trung cao độ: " + studyTopics[i % studyTopics.length];
-        } else {
-          count = 2 + (i % 3); // 2 - 4 sessions on weekdays
-          topic = "Buổi tối tự học: " + studyTopics[i % studyTopics.length];
-        }
-      }
-      // TODAY
-      else if (i === 0) {
-        count = 4;
-        topic = "Hôm nay: 2 phiên Pomodoro + 2 bài luyện trắc nghiệm VSA 320";
-      }
-      // 2. SEMESTER START & PRACTICE (14 - 45 days ago, ~ late Aug to mid Sep)
-      else if (i >= 14 && i < 45) {
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-          count = 3 + (i % 3); // 3 - 5 sessions
-          topic = "Cày bài tại quán cà phê: " + studyTopics[i % studyTopics.length];
-        } else if (dayOfWeek === 2 || dayOfWeek === 4) {
-          count = 2 + (i % 2); // 2 - 3 sessions
-          topic = "Làm bài tập về nhà: " + studyTopics[i % studyTopics.length];
-        } else if (dayOfWeek === 5) {
-          count = (i % 3 === 0) ? 1 : 0; // Friday rest
-        } else {
-          count = 1 + (i % 2);
-          topic = "Đọc chuẩn mực kiểm toán: " + studyTopics[i % studyTopics.length];
-        }
-      }
-      // 3. SUMMER BREAK (46 - 85 days ago, ~ mid July to mid August)
-      else if (i >= 45 && i < 85) {
-        // Sporadic light study during summer vacation
-        if (dayOfWeek === 0 || (i % 4 === 0)) {
-          count = 1 + (i % 2); // 1 or 2 sessions
-          topic = "Tự đọc tài liệu hè: " + studyTopics[i % studyTopics.length];
-        } else {
-          count = 0; // Rest day
-        }
-      }
-      // 4. FINAL EXAMS SEMESTER 2 CRUNCH (86 - 110 days ago, ~ late June)
-      else if (i >= 85 && i <= 110) {
-        // High intensity exam revision (4 - 7 sessions)
-        const rand = (i * 7) % 10;
-        if (rand > 1) {
-          count = 4 + (i % 4); // 4 - 7 sessions
-          topic = "Mùa thi cuối kỳ: " + studyTopics[i % studyTopics.length];
-        } else {
-          count = 1;
-        }
-      }
-      // 5. MIDTERM TESTS & CLASS PROJECTS (111 - 140 days ago, ~ May)
-      else {
-        if (dayOfWeek === 0 || dayOfWeek === 6) {
-          count = 3 + (i % 2);
-          topic = "Ôn tập giữa kỳ: " + studyTopics[i % studyTopics.length];
-        } else if (i % 3 === 0) {
-          count = 2;
-          topic = "Thảo luận nhóm kiểm toán: " + studyTopics[i % studyTopics.length];
-        } else {
-          count = 0;
-        }
-      }
-
-      if (count > 0) {
-        const pomos = Math.max(1, Math.floor(count * 0.65));
-        const quizzes = count >= 3 ? Math.floor(count * 0.25) : 0;
-        const notes = Math.max(0, count - pomos - quizzes);
-
-        data[dateStr] = {
-          count,
-          pomos,
-          quizzes,
-          notes,
-          topic: topic || studyTopics[i % studyTopics.length]
-        };
-      }
-    }
-
-    return data;
+    // Hoàn toàn về 0: Khởi tạo dữ liệu trống
+    return {};
   }
 
   static recordTodayActivity(type = 'pomo', amount = 1) {
@@ -209,8 +117,8 @@ export class StudyHeatmap {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // Number of days to show: 20 weeks * 7 = 140 days
-    const totalDays = 140;
+    // Number of days to show: 52 weeks * 7 = 364 days (1 full year, realistic like GitHub)
+    const totalDays = 364;
     const startDate = new Date(today);
     startDate.setDate(startDate.getDate() - totalDays + 1);
 
@@ -346,9 +254,10 @@ export class StudyHeatmap {
       if (count === 0) {
         detailPanel.innerHTML = `
           <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap;">
-            <span style="font-size:1.1rem;">🍃</span>
+            <span style="font-size:1.1rem;">🌱</span>
             <strong>${dateStr}:</strong>
-            <span>Ngày nghỉ xả hơi, nạp lại năng lượng sau những ngày cày chuẩn mực! ☕✨</span>
+            <span class="badge" style="background:var(--bg-secondary); color:var(--text-muted); border:1px solid var(--border-subtle);">0 phiên học</span>
+            <span>Chưa có hoạt động nào được ghi nhận. Bấm "+1 Pomodoro" hoặc "Check-in" để bắt đầu hành trình nhé! ☕✨</span>
           </div>
         `;
       } else {

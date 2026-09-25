@@ -172,13 +172,13 @@ class App {
       });
     }
 
-    const resetHeatmapBtn = document.getElementById('btn-reset-realistic-heatmap');
+    const resetHeatmapBtn = document.getElementById('btn-reset-zero-heatmap') || document.getElementById('btn-reset-realistic-heatmap');
     if (resetHeatmapBtn) {
       resetHeatmapBtn.addEventListener('click', () => {
-        StudyHeatmap.resetToRealisticHistory();
+        StudyHeatmap.resetToZero();
         StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
         soundEngine.playPageFlip();
-        this.showToast('🌸 Đã đồng bộ dữ liệu học tập thực tế 20 tuần của sinh viên kiểm toán!');
+        this.showToast('✨ Đã đặt lại toàn bộ bản đồ nhiệt về 0! Sẵn sàng cho hành trình mới ☕🌸');
       });
     }
   }
