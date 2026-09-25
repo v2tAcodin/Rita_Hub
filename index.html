@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
 
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=2.5">
+  <link rel="stylesheet" href="css/style.css?v=2.6">
 </head>
 <body>
 
@@ -167,13 +167,23 @@
             <!-- Dynamic stats rendered by heatmap.js -->
           </div>
 
-          <button class="btn-primary" id="btn-checkin-today" style="font-size: 0.82rem; padding: 0.45rem 1rem;">
-            ✨ Check-in học hôm nay
-          </button>
+          <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+            <button class="btn-outline" id="btn-reset-realistic-heatmap" title="Tải lại lịch sử học tập mô phỏng thực tế 16 tuần" style="font-size:0.8rem; padding:0.45rem 0.8rem;">
+              🔄 Dữ liệu thực tế
+            </button>
+            <button class="btn-primary" id="btn-checkin-today" style="font-size: 0.82rem; padding: 0.45rem 1rem;">
+              ✨ Check-in hôm nay
+            </button>
+          </div>
         </div>
 
         <div id="study-heatmap-container">
           <!-- Rendered dynamically by heatmap.js -->
+        </div>
+
+        <!-- Interactive Day Detail Banner -->
+        <div class="heatmap-day-detail-panel" id="heatmap-day-detail">
+          <span>💡 Nhấn hoặc rê chuột vào từng ô vuông để xem chi tiết buổi học của ngày đó nhé!</span>
         </div>
 
         <div class="heatmap-footer-row">
@@ -940,8 +950,18 @@
           </div>
 
           <div>
-            <label class="input-label" for="input-quiz-explanation">💡 Căn cứ chuẩn mực & Giải thích chi tiết *</label>
-            <textarea id="input-quiz-explanation" class="form-control" rows="3" style="width:100%; resize:vertical;" required placeholder="Trích dẫn chuẩn mực VSA, lý do tại sao phương án này đúng, cạm bẫy cần tránh..."></textarea>
+            <label class="input-label" for="input-quiz-explanation">✅ Căn cứ chuẩn mực & Vì sao đáp án ĐÚNG *</label>
+            <textarea id="input-quiz-explanation" class="form-control" rows="2" style="width:100%; resize:vertical;" required placeholder="Trích dẫn chuẩn mực VSA/Luật, giải thích cụ thể vì sao phương án này chính xác..."></textarea>
+          </div>
+
+          <div>
+            <label class="input-label" for="input-quiz-distractors">❌ Chỉ ra lỗi sai của các phương án khác (Tùy chọn - mỗi dòng 1 phương án)</label>
+            <textarea id="input-quiz-distractors" class="form-control" rows="3" style="width:100%; resize:vertical;" placeholder="Ví dụ:&#10;A sai vì: Thủ tục này chỉ áp dụng cho...&#10;C sai vì: VSA không cho phép...&#10;D sai vì: Nhầm lẫn giữa rủi ro..."></textarea>
+          </div>
+
+          <div>
+            <label class="input-label" for="input-quiz-trap">⚠️ Cạm bẫy đề thi & Mẹo ghi nhớ nhanh</label>
+            <input type="text" id="input-quiz-trap" class="form-control" style="width:100%;" placeholder="VD: Đề thi hay bẫy giữa kiểm kê thực tế và quyền sở hữu...">
           </div>
         </div>
 
@@ -1006,6 +1026,6 @@
   </div>
 
   <!-- JavaScript ES Module Entrypoint -->
-  <script type="module" src="js/app.js?v=2.5"></script>
+  <script type="module" src="js/app.js?v=2.6"></script>
 </body>
 </html>

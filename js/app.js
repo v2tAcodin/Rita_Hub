@@ -150,6 +150,15 @@ class App {
         this.showToast('🎉 Check-in thành công! Chuỗi ngày chăm chỉ của Rita lại tăng thêm! 🔥✨');
       });
     }
+
+    const resetHeatmapBtn = document.getElementById('btn-reset-realistic-heatmap');
+    if (resetHeatmapBtn) {
+      resetHeatmapBtn.addEventListener('click', () => {
+        StudyHeatmap.resetToRealisticHistory();
+        StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
+        this.showToast('🌸 Đã đồng bộ dữ liệu học tập thực tế 16 tuần của sinh viên kiểm toán!');
+      });
+    }
   }
 
   // ==========================================
@@ -1507,6 +1516,11 @@ class App {
         `;
       }).join('');
 
+      const distractorsHtml = (q.distractorExplanations || []).map((d, i) => {
+        if (i === q.correctAnswer) return '';
+        return `<li class="expl-wrong-item">${d}</li>`;
+      }).filter(Boolean).join('');
+
       return `
         <div class="quiz-card" data-id="${q.id}">
           <div class="quiz-card-top">
@@ -1525,8 +1539,26 @@ class App {
             ${optionsHtml}
           </div>
 
-          <div class="quiz-card-explanation">
-            <strong>💡 Căn cứ & Lời giải:</strong> ${q.explanation}
+          <div class="quiz-explanation-container">
+            <div class="expl-section expl-correct">
+              <strong>✅ Đáp án chuẩn & Căn cứ VSA:</strong><br>
+              ${q.correctExplanation || q.explanation}
+            </div>
+
+            ${distractorsHtml ? `
+              <div class="expl-section expl-wrong">
+                <strong>❌ Phân tích chi tiết: Vì sao các phương án khác SAI?</strong>
+                <ul class="expl-wrong-list">
+                  ${distractorsHtml}
+                </ul>
+              </div>
+            ` : ''}
+
+            ${q.examTrap ? `
+              <div class="expl-section expl-trap">
+                <strong>⚠️ Cạm bẫy phòng thi & Mẹo ghi nhớ:</strong> ${q.examTrap}
+              </div>
+            ` : ''}
           </div>
         </div>
       `;
@@ -1608,8 +1640,11 @@ class App {
     const optB = document.getElementById('input-quiz-opt-1').value.trim();
     const optC = document.getElementById('input-quiz-opt-2').value.trim();
     const optD = document.getElementById('input-quiz-opt-3').value.trim();
-    const correctAnswer = document.querySelector('input[name="quiz-correct-opt"]:checked')?.value || 0;
-    const explanation = document.getElementById('input-quiz-explanation').value.trim();
+    const correctExplanation = document.getElementById('input-quiz-explanation').value.trim();
+    const rawDistractors = document.getElementById('input-quiz-distractors')?.value.trim() || '';
+    const examTrap = document.getElementById('input-quiz-trap')?.value.trim() || '';
+
+    const distractorExplanations = rawDistractors ? rawDistractors.split('\n').filter(line => line.trim().length > 0) : [];
 
     if (!question || !optA || !optB || !optC || !optD) {
       alert('Vui lòng điền đầy đủ câu hỏi và 4 phương án trả lời!');
@@ -1622,7 +1657,9 @@ class App {
       question,
       options: [optA, optB, optC, optD],
       correctAnswer: parseInt(correctAnswer, 10),
-      explanation: explanation || 'Căn cứ theo tài liệu học tập và chuẩn mực kiểm toán.',
+      correctExplanation: correctExplanation || 'Căn cứ theo chuẩn mực kiểm toán và tài liệu tham chiếu.',
+      distractorExplanations,
+      examTrap,
       documentRef
     });
 
@@ -1807,10 +1844,30 @@ class App {
           `).join('')}
         </div>
 
-        <!-- Explanation (Initially hidden) -->
-        <div id="runner-explanation" class="quiz-card-explanation" style="display:none; animation:fadeIn 0.3s ease;">
-          <strong>💡 Giải thích chuẩn mực & Lý do:</strong><br>
-          ${currentQ.explanation}
+        <!-- Feedback Banner after answering -->
+        <div id="runner-feedback-banner" style="display:none;"></div>
+
+        <!-- Explanation Container (Initially hidden) -->
+        <div id="runner-explanation" class="quiz-explanation-container" style="display:none; animation:fadeIn 0.3s ease;">
+          <div class="expl-section expl-correct">
+            <strong>✅ Căn cứ chuẩn mực & Vì sao ${optLabels[currentQ.correctAnswer]} ĐÚNG:</strong><br>
+            ${currentQ.correctExplanation || currentQ.explanation}
+          </div>
+
+          ${(currentQ.distractorExplanations && currentQ.distractorExplanations.length > 0) ? `
+            <div class="expl-section expl-wrong">
+              <strong>❌ Phân tích chi tiết: Vì sao các phương án khác SAI?</strong>
+              <ul class="expl-wrong-list">
+                ${currentQ.distractorExplanations.map((d, i) => i !== currentQ.correctAnswer ? `<li class="expl-wrong-item">${d}</li>` : '').filter(Boolean).join('')}
+              </ul>
+            </div>
+          ` : ''}
+
+          ${currentQ.examTrap ? `
+            <div class="expl-section expl-trap">
+              <strong>⚠️ Cạm bẫy phòng thi & Mẹo ghi nhớ:</strong> ${currentQ.examTrap}
+            </div>
+          ` : ''}
         </div>
 
         <!-- Next / Finish Action bar -->
@@ -1824,6 +1881,7 @@ class App {
 
     // Attach choice clicks
     const optionBtns = container.querySelectorAll('.quiz-answer-choice-btn');
+    const feedbackBanner = document.getElementById('runner-feedback-banner');
     const explBox = document.getElementById('runner-explanation');
     const actionBar = document.getElementById('runner-action-bar');
     const nextBtn = document.getElementById('btn-runner-next-q');
@@ -1844,6 +1902,18 @@ class App {
           btn.classList.add('selected-correct');
           btn.querySelector('.opt-status-icon').innerHTML = '✅';
           this.quizSession.score++;
+
+          if (feedbackBanner) {
+            feedbackBanner.style.display = 'block';
+            feedbackBanner.innerHTML = `
+              <div class="runner-alert-banner alert-correct">
+                <span style="font-size:1.3rem;">🎉</span>
+                <div>
+                  <strong>Chính xác tuyệt đối!</strong> Phương án <strong>${optLabels[selectedIdx]}</strong> là câu trả lời chuẩn mực.
+                </div>
+              </div>
+            `;
+          }
         } else {
           btn.classList.add('selected-wrong');
           btn.querySelector('.opt-status-icon').innerHTML = '❌';
@@ -1854,10 +1924,24 @@ class App {
             correctBtn.classList.add('selected-correct', 'show-truth');
             correctBtn.querySelector('.opt-status-icon').innerHTML = '✓ (Đáp án đúng)';
           }
+
+          if (feedbackBanner) {
+            const wrongReason = currentQ.distractorExplanations ? currentQ.distractorExplanations[selectedIdx] : 'Phương án này chưa đúng theo quy định chuẩn mực.';
+            feedbackBanner.style.display = 'block';
+            feedbackBanner.innerHTML = `
+              <div class="runner-alert-banner alert-wrong">
+                <span style="font-size:1.3rem;">❌</span>
+                <div>
+                  <strong>Bạn đã chọn ${optLabels[selectedIdx]} (Chưa chính xác):</strong><br>
+                  ${wrongReason}
+                </div>
+              </div>
+            `;
+          }
         }
 
         // Show explanation & next button
-        if (explBox) explBox.style.display = 'block';
+        if (explBox) explBox.style.display = 'flex';
         if (actionBar) actionBar.style.display = 'flex';
       });
     });
@@ -1895,6 +1979,10 @@ class App {
 
     // Play chime sound
     soundEngine.playChime();
+
+    // Record quiz activity to Heatmap!
+    StudyHeatmap.recordTodayActivity('quiz', 1);
+    StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
 
     container.innerHTML = `
       <div class="quiz-score-screen">
