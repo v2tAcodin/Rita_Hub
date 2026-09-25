@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
 
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css?v=2.3">
+  <link rel="stylesheet" href="css/style.css?v=2.5">
 </head>
 <body>
 
@@ -224,37 +224,88 @@
         </div>
       </div>
 
-      <div class="doc-hub-header">
-        
-        <!-- Filter & Search Toolbar -->
-        <div class="filter-toolbar">
-          <div class="search-input-wrapper">
-            <span class="search-icon">🔍</span>
-            <input type="text" id="doc-search-input" class="search-input" placeholder="Tìm kiếm tài liệu, tóm tắt, chuẩn mực (#VSA320, Trọng yếu...)...">
-          </div>
+      <!-- View Switcher: Documents vs Quiz Practice -->
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem; margin-top: 1.2rem; margin-bottom: 0.8rem;">
+        <div class="quiz-view-toggle">
+          <button class="quiz-toggle-btn active" id="btn-view-docs" data-view="docs">
+            📚 Kho Tài Liệu
+          </button>
+          <button class="quiz-toggle-btn" id="btn-view-quiz" data-view="quiz">
+            🎯 Luyện Tập Trắc Nghiệm <span class="badge badge-yellow" id="badge-quiz-total-count" style="margin-left:4px;">5</span>
+          </button>
+        </div>
 
-          <div class="toolbar-controls">
-            <!-- Format Filter -->
-            <select class="filter-select" id="doc-format-select" aria-label="Lọc theo định dạng">
-              <option value="all">📁 Tất cả định dạng</option>
-              <option value="summary">📝 Tóm tắt / Cheat Sheet</option>
-              <option value="slide">📑 Slide bài giảng</option>
-              <option value="excel">📊 Mẫu W/P Excel</option>
-              <option value="exam">🎯 Đề thi & Đáp án</option>
-              <option value="link">🔗 Ebook / Liên kết</option>
-            </select>
-
-            <!-- Favorites Toggle -->
-            <button class="fav-filter-btn" id="filter-fav-btn" title="Chỉ hiện tài liệu đánh dấu yêu thích">
-              <span>❤️</span> Yêu thích
-            </button>
-          </div>
+        <div id="quiz-top-actions" style="display:none; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+          <button class="btn-outline" id="btn-open-auto-quiz" style="font-size:0.85rem;">
+            ⚡ Tạo Từ Tài Liệu
+          </button>
+          <button class="btn-primary" id="btn-open-create-quiz" style="font-size:0.85rem;">
+            + Thêm Câu Hỏi
+          </button>
+          <button class="btn-primary" id="btn-start-quiz-practice" style="font-size:0.85rem; background:linear-gradient(135deg, var(--brown-800), var(--brown-700)); color:#FFF;">
+            🚀 Bắt Đầu Luyện Thi
+          </button>
         </div>
       </div>
 
-      <!-- Documents Grid Cards -->
-      <div class="doc-grid" id="doc-grid">
-        <!-- Rendered dynamically by app.js -->
+      <!-- VIEW 1: DOCUMENTS VIEW -->
+      <div id="doc-view-wrapper">
+        <div class="doc-hub-header">
+          
+          <!-- Filter & Search Toolbar -->
+          <div class="filter-toolbar">
+            <div class="search-input-wrapper">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="doc-search-input" class="search-input" placeholder="Tìm kiếm tài liệu, tóm tắt, chuẩn mực (#VSA320, Trọng yếu...)...">
+            </div>
+
+            <div class="toolbar-controls">
+              <!-- Format Filter -->
+              <select class="filter-select" id="doc-format-select" aria-label="Lọc theo định dạng">
+                <option value="all">📁 Tất cả định dạng</option>
+                <option value="summary">📝 Tóm tắt / Cheat Sheet</option>
+                <option value="slide">📑 Slide bài giảng</option>
+                <option value="excel">📊 Mẫu W/P Excel</option>
+                <option value="exam">🎯 Đề thi & Đáp án</option>
+                <option value="link">🔗 Ebook / Liên kết</option>
+              </select>
+
+              <!-- Favorites Toggle -->
+              <button class="fav-filter-btn" id="filter-fav-btn" title="Chỉ hiện tài liệu đánh dấu yêu thích">
+                <span>❤️</span> Yêu thích
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents Grid Cards -->
+        <div class="doc-grid" id="doc-grid">
+          <!-- Rendered dynamically by app.js -->
+        </div>
+      </div>
+
+      <!-- VIEW 2: QUIZ PRACTICE VIEW -->
+      <div id="quiz-view-wrapper" style="display:none;" class="quiz-section-container">
+        <div class="quiz-header-bar">
+          <div>
+            <h3 class="serif-heading" id="quiz-header-title" style="font-size:1.25rem;">
+              🎯 Luyện Tập Trắc Nghiệm: Tất Cả Môn Học
+            </h3>
+            <p style="font-size:0.85rem; color:var(--text-secondary); margin-top:0.2rem;">
+              Luyện tập các câu hỏi trắc nghiệm kiểm toán, thuế, chuẩn mực VSA kèm giải thích chi tiết.
+            </p>
+          </div>
+          <div style="display:flex; gap:0.5rem; align-items:center;">
+            <button class="btn-primary" id="btn-quiz-practice-now" style="font-size:0.88rem;">
+              🚀 Làm Bài Thi Thử
+            </button>
+          </div>
+        </div>
+
+        <!-- List of Quiz Cards -->
+        <div class="quiz-list" id="quiz-list">
+          <!-- Rendered dynamically by app.js -->
+        </div>
       </div>
     </section>
 
@@ -829,7 +880,132 @@
     </div>
   </div>
 
+  <!-- Modal 5: Create Quiz Question -->
+  <div class="modal-backdrop" id="modal-quiz-create" role="dialog" aria-modal="true" aria-labelledby="quiz-create-title">
+    <div class="modal-window" style="max-width: 580px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="quiz-create-title">Thêm Câu Hỏi Trắc Nghiệm</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <form id="quiz-create-form">
+        <div class="modal-body">
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+            <div>
+              <label class="input-label" for="input-quiz-folder">Môn học *</label>
+              <select id="input-quiz-folder" class="form-control" style="width:100%;" required>
+                <!-- populated dynamically -->
+              </select>
+            </div>
+            <div>
+              <label class="input-label" for="input-quiz-doc">Tài liệu tham chiếu</label>
+              <select id="input-quiz-doc" class="form-control" style="width:100%;">
+                <option value="">(Tùy chọn - Không gắn)</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label class="input-label" for="input-quiz-question">Nội dung câu hỏi *</label>
+            <textarea id="input-quiz-question" class="form-control" rows="2" style="width:100%; resize:vertical;" required placeholder="Ví dụ: Theo VSA 320, Mức trọng yếu thực hiện được xác định nhằm mục đích gì?"></textarea>
+          </div>
+
+          <div>
+            <label class="input-label">Các phương án trả lời & Chọn đáp án đúng *</label>
+            <div style="display:flex; flex-direction:column; gap:0.5rem; margin-top:0.4rem;">
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="radio" name="quiz-correct-opt" value="0" checked id="opt-radio-0">
+                <label for="opt-radio-0" style="font-weight:700; width:20px;">A</label>
+                <input type="text" id="input-quiz-opt-0" class="form-control" style="flex:1;" required placeholder="Phương án A">
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="radio" name="quiz-correct-opt" value="1" id="opt-radio-1">
+                <label for="opt-radio-1" style="font-weight:700; width:20px;">B</label>
+                <input type="text" id="input-quiz-opt-1" class="form-control" style="flex:1;" required placeholder="Phương án B">
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="radio" name="quiz-correct-opt" value="2" id="opt-radio-2">
+                <label for="opt-radio-2" style="font-weight:700; width:20px;">C</label>
+                <input type="text" id="input-quiz-opt-2" class="form-control" style="flex:1;" required placeholder="Phương án C">
+              </div>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <input type="radio" name="quiz-correct-opt" value="3" id="opt-radio-3">
+                <label for="opt-radio-3" style="font-weight:700; width:20px;">D</label>
+                <input type="text" id="input-quiz-opt-3" class="form-control" style="flex:1;" required placeholder="Phương án D">
+              </div>
+            </div>
+            <div style="font-size:0.75rem; color:var(--text-muted); margin-top:0.3rem;">
+              * Tích chọn nút tròn bên trái để đánh dấu phương án đúng.
+            </div>
+          </div>
+
+          <div>
+            <label class="input-label" for="input-quiz-explanation">💡 Căn cứ chuẩn mực & Giải thích chi tiết *</label>
+            <textarea id="input-quiz-explanation" class="form-control" rows="3" style="width:100%; resize:vertical;" required placeholder="Trích dẫn chuẩn mực VSA, lý do tại sao phương án này đúng, cạm bẫy cần tránh..."></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-outline modal-close-trigger">Hủy</button>
+          <button type="submit" class="btn-primary">Lưu Câu Hỏi 🎯</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal 6: Auto Generate Quiz From Document -->
+  <div class="modal-backdrop" id="modal-quiz-auto" role="dialog" aria-modal="true" aria-labelledby="quiz-auto-title">
+    <div class="modal-window" style="max-width: 540px;">
+      <div class="modal-header">
+        <h3 class="modal-title" id="quiz-auto-title">⚡ Tạo Nhanh Câu Hỏi Từ Tài Liệu</h3>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:0.88rem; color:var(--text-secondary);">
+          Hệ thống sẽ dựa trên <strong>Tóm tắt nội dung</strong> và <strong>Ghi chú ôn thi</strong> của tài liệu bạn chọn để tự động thiết lập các câu hỏi trắc nghiệm ôn tập.
+        </p>
+
+        <div>
+          <label class="input-label" for="select-auto-quiz-doc">Chọn tài liệu nguồn:</label>
+          <select id="select-auto-quiz-doc" class="form-control" style="width:100%; margin-top:0.3rem;">
+            <!-- populated dynamically -->
+          </select>
+        </div>
+
+        <div id="auto-quiz-preview-box" style="margin-top:0.8rem; display:none;">
+          <h4 style="font-size:0.88rem; margin-bottom:0.3rem; color:var(--brown-900);">Xem trước câu hỏi được trích xuất:</h4>
+          <div id="auto-quiz-preview-content" style="font-size:0.82rem; background:var(--bg-secondary); padding:0.85rem; border-radius:var(--radius-sm); border:1px solid var(--border-subtle); line-height:1.45;"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-outline modal-close-trigger">Đóng</button>
+        <button type="button" class="btn-primary" id="btn-confirm-auto-quiz">
+          ✨ Tạo & Lưu Vào Bộ Câu Hỏi
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7: Interactive Quiz Runner (Phòng Luyện Thi) -->
+  <div class="modal-backdrop" id="modal-quiz-runner" role="dialog" aria-modal="true" aria-labelledby="runner-title">
+    <div class="modal-window" style="max-width: 650px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="runner-title">🎯 Phòng Luyện Thi Trắc Nghiệm</h3>
+          <div style="font-size:0.8rem; color:var(--text-muted);" id="runner-folder-subtitle">Môn học</div>
+        </div>
+        <button class="modal-close-btn modal-close-trigger" aria-label="Đóng">✕</button>
+      </div>
+
+      <div class="modal-body" id="quiz-runner-body">
+        <!-- Interactive Question UI or Score UI dynamically injected here -->
+      </div>
+    </div>
+  </div>
+
   <!-- JavaScript ES Module Entrypoint -->
-  <script type="module" src="js/app.js?v=2.3"></script>
+  <script type="module" src="js/app.js?v=2.5"></script>
 </body>
 </html>
