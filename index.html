@@ -16,7 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
 
   <!-- Core Stylesheet -->
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.3">
 </head>
 <body>
 
@@ -150,6 +150,46 @@
          ==================================================================== -->
     <section class="tab-pane active" id="tab-docs" role="tabpanel" aria-labelledby="tab-btn-docs">
       
+      <!-- Study Activity Heatmap Card (Bản Đồ Nhiệt Chăm Chỉ) -->
+      <div class="heatmap-card" id="study-heatmap-card">
+        <div class="heatmap-header-row">
+          <div class="heatmap-title-box">
+            <span style="font-size: 1.5rem;">🔥</span>
+            <div>
+              <div class="heatmap-title">Bản Đồ Nhiệt Chăm Chỉ Của Rita</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">
+                Theo dõi chuỗi ngày cày cuốc chuẩn mực VSA, BCTC và ôn thi
+              </div>
+            </div>
+          </div>
+
+          <div class="heatmap-stats-pill-group" id="heatmap-stats-group">
+            <!-- Dynamic stats rendered by heatmap.js -->
+          </div>
+
+          <button class="btn-primary" id="btn-checkin-today" style="font-size: 0.82rem; padding: 0.45rem 1rem;">
+            ✨ Check-in học hôm nay
+          </button>
+        </div>
+
+        <div id="study-heatmap-container">
+          <!-- Rendered dynamically by heatmap.js -->
+        </div>
+
+        <div class="heatmap-footer-row">
+          <span>Tự động cập nhật mỗi khi hoàn thành Pomodoro, thêm tài liệu hoặc check-in</span>
+          <div class="heatmap-legend">
+            <span>Ít</span>
+            <div class="legend-square level-0"></div>
+            <div class="legend-square level-1"></div>
+            <div class="legend-square level-2"></div>
+            <div class="legend-square level-3"></div>
+            <div class="legend-square level-4"></div>
+            <span>Nhiều</span>
+          </div>
+        </div>
+      </div>
+
       <!-- Dynamic Folder / Subject Management Section -->
       <div class="folders-container" id="folders-container">
         <div class="folders-header">
@@ -790,6 +830,6 @@
   </div>
 
   <!-- JavaScript ES Module Entrypoint -->
-  <script type="module" src="js/app.js"></script>
+  <script type="module" src="js/app.js?v=2.3"></script>
 </body>
 </html>

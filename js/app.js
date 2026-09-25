@@ -3,6 +3,7 @@
 import { StorageManager } from './storage.js';
 import { soundEngine } from './audio.js';
 import { MaterialityCalculator } from './calculator.js';
+import { StudyHeatmap } from './heatmap.js';
 import { DAILY_AFFIRMATIONS, AUDIT_DICTIONARY } from './data.js';
 
 class App {
@@ -30,6 +31,7 @@ class App {
     this.initTheme();
     this.initNavigation();
     this.initDailyAffirmation();
+    this.initHeatmap();
     this.initFolders();
     this.initDocumentsHub();
     this.initPomodoro();
@@ -128,6 +130,22 @@ class App {
 
     const statPomoEl = document.getElementById('stat-pomo-count');
     if (statPomoEl) statPomoEl.textContent = this.pomoCompletedCount;
+  }
+
+  // ==========================================
+  // Study Activity Heatmap Controller
+  // ==========================================
+  initHeatmap() {
+    StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
+
+    const checkinBtn = document.getElementById('btn-checkin-today');
+    if (checkinBtn) {
+      checkinBtn.addEventListener('click', () => {
+        StudyHeatmap.recordTodayActivity('checkin', 1);
+        StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
+        this.showToast('🎉 Check-in thành công! Chuỗi ngày chăm chỉ của Rita lại tăng thêm! 🔥✨');
+      });
+    }
   }
 
   // ==========================================
@@ -618,6 +636,8 @@ class App {
         examTips
       });
       this.showToast('Đã lưu tài liệu mới vào môn học! 🌸');
+      StudyHeatmap.recordTodayActivity('notes', 1);
+      StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
     }
 
     this.closeAllModals();
@@ -888,6 +908,8 @@ class App {
       localStorage.setItem('rita_pomo_count', this.pomoCompletedCount);
       this.updateStats();
       this.showToast('🎉 Hoàn thành phiên học 25 phút! Tuyệt vời lắm Rita!');
+      StudyHeatmap.recordTodayActivity('pomo', 1);
+      StudyHeatmap.renderHeatmap('study-heatmap-container', 'heatmap-stats-group');
       this.pomoMode = 'shortBreak';
       document.querySelectorAll('.pomo-mode-btn').forEach(b => {
         b.classList.toggle('active', b.getAttribute('data-mode') === 'shortBreak');
